@@ -58,9 +58,11 @@ print_api_common_error(int32_t error)
 }
 
 #undef STRTOUL
-#define STRTOUL(ul,s) \
+#define STRTOUL(ul,s) { \
+    int i; \
     ul = 0; \
-    for(int i=0; ISDIGIT(s[i]); i++) ul = 10*ul + (s[i] -'0');
+    for(i=0; ISDIGIT(s[i]); i++) ul = 10*ul + (s[i] -'0'); \
+}
 
 static int32_t
 parse_breakpoint_no(char* args)
@@ -254,7 +256,7 @@ parse_breakcommand(mrdb_state *mrdb, const char **file, uint32_t *line, char **c
   }
 
   args = mrdb->words[1];
-  if((body = strchr(args, ':')) == NULL) {
+  if((body = strrchr(args, ':')) == NULL) {
     body = args;
     type = check_bptype(body);
   } else {
