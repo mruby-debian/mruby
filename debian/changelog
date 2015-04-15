@@ -1,6 +1,13 @@
+mruby (1.1.0+20150416+gitfa824e32-1) unstable; urgency=medium
+
+  * Snapshot, taken from the master (20150416).
+
+ -- Akira Mitsui <murase.syuka@gmail.com>  Thu, 16 Apr 2015 00:39:10 +0900
+
 mruby (1.1.0+20150131+git089f1f6c-1) unstable; urgency=medium
 
   * Snapshot, taken from the master (20150131).
+  * rm patch. because it fixed in upstream
 
  -- Akira Mitsui <murase.syuka@gmail.com>  Sat, 31 Jan 2015 16:58:37 +0900
 
