@@ -1,2 +1,3 @@
 enable_verbose_build.patch
 change_optimize_O2.patch
+add_fpic_amd64.patch
