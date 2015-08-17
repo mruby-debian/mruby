@@ -1,1 +1,2 @@
 enable_verbose_build.patch
+change_optimize_O2.patch

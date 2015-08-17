@@ -1,6 +1,7 @@
 mruby (1.1.0+20150817+gita1731254-1) unstable; urgency=medium
 
   * Snapshot, taken from the master (20150817).
+  * Add patches/change_optimize_O2.patch. (Closes: #795367)
 
  -- Nobuhiro Iwamatsu <iwamatsu@debian.org>  Mon, 17 Aug 2015 19:53:07 +0900
 
