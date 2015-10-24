@@ -1,6 +1,7 @@
 mruby (1.1.0+20151021+git68ba3862-1) unstable; urgency=medium
 
   * Snapshot, taken from the master (20151021).
+  * Add patches/fix_bintest_for_debuild.patch.
 
  -- Akira Mitsui <murase.syuka@gmail.com>  Wed, 21 Oct 2015 21:21:18 +0900
 
