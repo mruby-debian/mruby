@@ -1,3 +1,9 @@
+mruby (1.2.0-1) unstable; urgency=medium
+
+  * New upstream release(1.2.0).
+
+ -- Akira Mitsui <murase.syuka@gmail.com>  Tue, 17 Nov 2015 22:47:07 +0900
+
 mruby (1.1.0+20151021+git68ba3862-1) unstable; urgency=medium
 
   * Snapshot, taken from the master (20151021).
