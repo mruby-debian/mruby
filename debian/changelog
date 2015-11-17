@@ -1,6 +1,7 @@
 mruby (1.2.0-1) unstable; urgency=medium
 
   * New upstream release(1.2.0).
+  * Remove patch. because it fixed in upstream
 
  -- Akira Mitsui <murase.syuka@gmail.com>  Tue, 17 Nov 2015 22:47:07 +0900
 
@@ -47,7 +48,7 @@ mruby (1.1.0+20150416+gitfa824e32-1) unstable; urgency=medium
 mruby (1.1.0+20150131+git089f1f6c-1) unstable; urgency=medium
 
   * Snapshot, taken from the master (20150131).
-  * rm patch. because it fixed in upstream
+  * Remove patch. because it fixed in upstream
 
  -- Akira Mitsui <murase.syuka@gmail.com>  Sat, 31 Jan 2015 16:58:37 +0900
 
