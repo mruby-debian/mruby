@@ -1300,7 +1300,7 @@ stmt            : keyword_alias fsym {p->lstate = EXPR_FNAME;} fsym
                     }
                 | keyword_END '{' compstmt '}'
                     {
-                      yyerror(p, "END not suported");
+                      yyerror(p, "END not supported");
                       $$ = new_postexe(p, $3);
                     }
                 | command_asgn
@@ -2829,7 +2829,7 @@ symbol          : basic_symbol
                     {
                       $$ = new_sym(p, $1);
                     }
-                | tSYMBEG tSTRING_BEG string_interp tSTRING
+                | tSYMBEG tSTRING_BEG string_rep tSTRING
                     {
                       p->lstate = EXPR_END;
                       $$ = new_dsym(p, push($3, $4));
@@ -5634,7 +5634,7 @@ load_exec(mrb_state *mrb, parser_state *p, mrbc_context *c)
   if (mrb->c->ci) {
     mrb->c->ci->target_class = target;
   }
-  v = mrb_toplevel_run_keep(mrb, proc, keep);
+  v = mrb_top_run(mrb, proc, mrb_top_self(mrb), keep);
   if (mrb->exc) return mrb_nil_value();
   return v;
 }

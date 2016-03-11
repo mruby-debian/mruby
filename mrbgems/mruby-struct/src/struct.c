@@ -418,7 +418,6 @@ static mrb_value
 mrb_struct_init_copy(mrb_state *mrb, mrb_value copy)
 {
   mrb_value s;
-  mrb_int i, len;
 
   mrb_get_args(mrb, "o", &s);
 
@@ -429,13 +428,7 @@ mrb_struct_init_copy(mrb_state *mrb, mrb_value copy)
   if (!mrb_array_p(s)) {
     mrb_raise(mrb, E_TYPE_ERROR, "corrupted struct");
   }
-  if (RSTRUCT_LEN(copy) != RSTRUCT_LEN(s)) {
-    mrb_raise(mrb, E_TYPE_ERROR, "struct size mismatch");
-  }
-  len = RSTRUCT_LEN(copy);
-  for (i = 0; i < len; i++) {
-    mrb_ary_set(mrb, copy, i, RSTRUCT_PTR(s)[i]);
-  }
+  mrb_ary_replace(mrb, copy, s);
   return copy;
 }
 
@@ -455,7 +448,7 @@ struct_aref_sym(mrb_state *mrb, mrb_value s, mrb_sym id)
       return ptr[i];
     }
   }
-  mrb_raisef(mrb, E_INDEX_ERROR, "no member '%S' in struct", mrb_sym2str(mrb, id));
+  mrb_name_error(mrb, id, "no member '%S' in struct", mrb_sym2str(mrb, id));
   return mrb_nil_value();       /* not reached */
 }
 
@@ -503,7 +496,7 @@ mrb_struct_aref(mrb_state *mrb, mrb_value s)
     mrb_value sym = mrb_check_intern_str(mrb, idx);
 
     if (mrb_nil_p(sym)) {
-      mrb_raisef(mrb, E_INDEX_ERROR, "no member '%S' in struct", idx);
+      mrb_name_error(mrb, mrb_intern_str(mrb, idx), "no member '%S' in struct", idx);
     }
     idx = sym;
   }
@@ -535,7 +528,7 @@ mrb_struct_aset_sym(mrb_state *mrb, mrb_value s, mrb_sym id, mrb_value val)
       return val;
     }
   }
-  mrb_raisef(mrb, E_INDEX_ERROR, "no member '%S' in struct", mrb_sym2str(mrb, id));
+  mrb_name_error(mrb, id, "no member '%S' in struct", mrb_sym2str(mrb, id));
   return val;                   /* not reach */
 }
 
@@ -574,7 +567,7 @@ mrb_struct_aset(mrb_state *mrb, mrb_value s)
     mrb_value sym = mrb_check_intern_str(mrb, idx);
 
     if (mrb_nil_p(sym)) {
-      mrb_raisef(mrb, E_INDEX_ERROR, "no member '%S' in struct", idx);
+      mrb_name_error(mrb, mrb_intern_str(mrb, idx), "no member '%S' in struct", idx);
     }
     idx = sym;
   }
