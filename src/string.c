@@ -273,10 +273,16 @@ utf8_strlen(mrb_value str, mrb_int len)
   mrb_int total = 0;
   char* p = RSTRING_PTR(str);
   char* e = p;
+  if (RSTRING(str)->flags & MRB_STR_NO_UTF) {
+    return RSTRING_LEN(str);
+  }
   e += len < 0 ? RSTRING_LEN(str) : len;
   while (p<e) {
     p += utf8len(p, e);
     total++;
+  }
+  if (RSTRING_LEN(str) == total) {
+    RSTRING(str)->flags |= MRB_STR_NO_UTF;
   }
   return total;
 }
@@ -306,17 +312,20 @@ bytes2chars(char *p, mrb_int bi)
   mrb_int i, b, n;
 
   for (b=i=0; b<bi; i++) {
-    n = utf8len(p, p+bi);
+    n = utf8len_codepage[(unsigned char)*p];
     b += n;
     p += n;
   }
+  if (b != bi) return -1;
   return i;
 }
 
+#define BYTES_ALIGN_CHECK(pos) if (pos < 0) return mrb_nil_value();
 #else
 #define RSTRING_CHAR_LEN(s) RSTRING_LEN(s)
 #define chars2bytes(p, off, ci) (ci)
 #define bytes2chars(p, bi) (bi)
+#define BYTES_ALIGN_CHECK(pos)
 #endif
 
 static inline mrb_int
@@ -352,12 +361,12 @@ mrb_memsearch(const void *x0, mrb_int m, const void *y0, mrb_int n)
     return 0;
   }
   else if (m == 1) {
-    const unsigned char *ys = y, *ye = ys + n;
-    for (; y < ye; ++y) {
-      if (*x == *y)
-        return y - ys;
-    }
-    return -1;
+    const unsigned char *ys = memchr(y, *x, n);
+
+    if (ys)
+      return ys - y;
+    else
+      return -1;
   }
   return mrb_memsearch_qs((const unsigned char *)x0, m, (const unsigned char *)y0, n);
 }
@@ -649,6 +658,7 @@ MRB_API void
 mrb_str_modify(mrb_state *mrb, struct RString *s)
 {
   check_frozen(mrb, s);
+  s->flags &= ~MRB_STR_NO_UTF;
   if (RSTR_SHARED_P(s)) {
     mrb_shared_string *shared = s->as.heap.aux.shared;
 
@@ -1608,6 +1618,7 @@ mrb_str_index(mrb_state *mrb, mrb_value str)
 
   if (pos == -1) return mrb_nil_value();
   pos = bytes2chars(RSTRING_PTR(str), pos);
+  BYTES_ALIGN_CHECK(pos);
   return mrb_fixnum_value(pos);
 }
 
@@ -1859,7 +1870,6 @@ mrb_str_rindex(mrb_state *mrb, mrb_value str)
       sub = mrb_nil_value();
   }
   pos = chars2bytes(str, 0, pos);
-  len = chars2bytes(str, pos, len);
   mrb_regexp_check(mrb, sub);
 
   switch (mrb_type(sub)) {
@@ -1877,6 +1887,7 @@ mrb_str_rindex(mrb_state *mrb, mrb_value str)
       pos = str_rindex(mrb, str, sub, pos);
       if (pos >= 0) {
         pos = bytes2chars(RSTRING_PTR(str), pos);
+        BYTES_ALIGN_CHECK(pos);
         return mrb_fixnum_value(pos);
       }
       break;
@@ -2148,6 +2159,8 @@ mrb_str_len_to_inum(mrb_state *mrb, const char *str, size_t len, int base, int b
         break;
       }
     }
+    if (*(p - 1) == '0')
+      p--;
   }
   if (p == pend) {
     if (badcheck) goto bad;

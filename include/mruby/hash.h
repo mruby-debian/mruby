@@ -8,6 +8,7 @@
 #define MRUBY_HASH_H
 
 #include "common.h"
+#include <mruby/khash.h>
 
 /**
  * Hash class
@@ -59,6 +60,15 @@ MRB_API mrb_value mrb_hash_empty_p(mrb_state *mrb, mrb_value self);
  */
 MRB_API mrb_value mrb_hash_clear(mrb_state *mrb, mrb_value hash);
 
+/* declaration of struct kh_ht */
+/* be careful when you touch the internal */
+typedef struct {
+  mrb_value v;
+  mrb_int n;
+} mrb_hash_value;
+
+KHASH_DECLARE(ht, mrb_value, mrb_hash_value, TRUE)
+
 /* RHASH_TBL allocates st_table if not available. */
 #define RHASH(obj)   ((struct RHash*)(mrb_ptr(obj)))
 #define RHASH_TBL(h)          (RHASH(h)->ht)
@@ -66,7 +76,9 @@ MRB_API mrb_value mrb_hash_clear(mrb_state *mrb, mrb_value hash);
 #define RHASH_PROCDEFAULT(h)  RHASH_IFNONE(h)
 MRB_API struct kh_ht * mrb_hash_tbl(mrb_state *mrb, mrb_value hash);
 
-#define MRB_HASH_PROC_DEFAULT 256
+#define MRB_HASH_DEFAULT      1
+#define MRB_HASH_PROC_DEFAULT 2
+#define MRB_RHASH_DEFAULT_P(h) (RHASH(h)->flags & MRB_HASH_DEFAULT)
 #define MRB_RHASH_PROCDEFAULT_P(h) (RHASH(h)->flags & MRB_HASH_PROC_DEFAULT)
 
 /* GC functions */
