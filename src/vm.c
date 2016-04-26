@@ -2228,6 +2228,7 @@ RETRY_TRY_BLOCK:
 
       while (b < lim) {
         mrb_hash_set(mrb, hash, regs[b], regs[b+1]);
+        regs = mrb->c->stack;
         b+=2;
       }
       regs[GETARG_A(i)] = hash;
@@ -2271,6 +2272,7 @@ RETRY_TRY_BLOCK:
         base = mrb_obj_value(mrb->c->ci->target_class);
       }
       c = mrb_vm_define_class(mrb, base, super, id);
+      regs = mrb->c->stack;
       regs[a] = mrb_obj_value(c);
       ARENA_RESTORE(mrb, ai);
       NEXT;
