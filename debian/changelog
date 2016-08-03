@@ -1,3 +1,9 @@
+mruby (1.2.0+20160804+git501e1ef2-1) unstable; urgency=medium
+
+  * Snapshot, taken from the master (20160804).
+
+ -- Akira Mitsui <murase.syuka@gmail.com>  Thu, 04 Aug 2016 00:25:55 +0900
+
 mruby (1.2.0+20160527+git6b0299f7-1) unstable; urgency=medium
 
   * Snapshot, taken from the master (20160527).
