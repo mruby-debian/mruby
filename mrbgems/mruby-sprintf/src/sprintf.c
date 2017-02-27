@@ -116,8 +116,9 @@ mrb_fix2binstr(mrb_state *mrb, mrb_value x, int base)
 
 #define CHECK(l) do {\
 /*  int cr = ENC_CODERANGE(result);*/\
-  while (blen + (l) >= bsiz) {\
+  while ((l) >= bsiz - blen) {\
     bsiz*=2;\
+    if (bsiz < 0) mrb_raise(mrb, E_ARGUMENT_ERROR, "too big specifier"); \
   }\
   mrb_str_resize(mrb, result, bsiz);\
 /*  ENC_CODERANGE_SET(result, cr);*/\
@@ -891,7 +892,7 @@ retry:
         }
         else {
           s = nbuf;
-          if (v < 0) {
+          if (base != 10 && v < 0) {
             dots = 1;
           }
           switch (base) {

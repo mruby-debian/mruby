@@ -118,6 +118,7 @@ each_backtrace(mrb_state *mrb, mrb_int ciidx, mrb_code *pc0, each_backtrace_func
     if (MRB_PROC_CFUNC_P(ci->proc)) continue;
 
     irep = ci->proc->body.irep;
+    if (!irep) continue;
 
     if (mrb->c->cibase[i].err) {
       pc = mrb->c->cibase[i].err;
@@ -219,7 +220,9 @@ print_backtrace(mrb_state *mrb, mrb_value backtrace)
   for (i = 0; i < n; i++) {
     mrb_value entry = RARRAY_PTR(backtrace)[i];
 
-    fprintf(stream, "\t[%d] %.*s\n", i, (int)RSTRING_LEN(entry), RSTRING_PTR(entry));
+    if (mrb_string_p(entry)) {
+      fprintf(stream, "\t[%d] %.*s\n", i, (int)RSTRING_LEN(entry), RSTRING_PTR(entry));
+    }
   }
 }
 
@@ -260,7 +263,7 @@ mrb_print_backtrace(mrb_state *mrb)
 {
   mrb_value backtrace;
 
-  if (!mrb->exc || mrb_obj_is_kind_of(mrb, mrb_obj_value(mrb->exc), E_SYSSTACK_ERROR)) {
+  if (!mrb->exc) {
     return;
   }
 

@@ -93,6 +93,7 @@ codegen_error(codegen_scope *s, const char *message)
   if (!s) return;
   while (s->prev) {
     codegen_scope *tmp = s->prev;
+    mrb_free(s->mrb, s->iseq);
     mrb_pool_close(s->mpool);
     s = tmp;
   }
@@ -387,6 +388,9 @@ dispatch(codegen_scope *s, int pc)
     scope_error(s);
     break;
   }
+  if (diff > MAXARG_sBx) {
+    codegen_error(s, "too distant jump address");
+  }
   s->iseq[pc] = MKOP_AsBx(c, GETARG_A(i), diff);
 }
 
@@ -662,6 +666,9 @@ lambda_body(codegen_scope *s, node *tree, int blk)
     ka = kd = 0;
     ba = tree->car->cdr->cdr->cdr->cdr ? 1 : 0;
 
+    if (ma > 0x1f || oa > 0x1f || pa > 0x1f || ka > 0x1f) {
+      codegen_error(s, "too many formal arguments");
+    }
     a = ((mrb_aspec)(ma & 0x1f) << 18)
       | ((mrb_aspec)(oa & 0x1f) << 13)
       | ((ra & 1) << 12)
@@ -1675,7 +1682,6 @@ codegen(codegen_scope *s, node *tree, int val)
         }
         tree = tree->car;
         if (tree->car) {                /* pre */
-          int first = TRUE;
           t = tree->car;
           n = 0;
           while (t) {
@@ -1684,10 +1690,7 @@ codegen(codegen_scope *s, node *tree, int val)
               n++;
             }
             else {
-              if (first) {
-                genop(s, MKOP_A(OP_LOADNIL, rhs+n));
-                first = FALSE;
-              }
+              genop(s, MKOP_A(OP_LOADNIL, rhs+n));
               gen_assignment(s, t->car, rhs+n, NOVAL);
             }
             t = t->cdr;
@@ -2035,7 +2038,7 @@ codegen(codegen_scope *s, node *tree, int val)
     break;
 
   case NODE_REDO:
-    if (!s->loop) {
+    if (!s->loop || s->loop->type == LOOP_BEGIN || s->loop->type == LOOP_RESCUE) {
       raise_error(s, "unexpected redo");
     }
     else {
@@ -2847,6 +2850,7 @@ scope_finish(codegen_scope *s)
     memcpy(fname, s->filename, fname_len);
     fname[fname_len] = '\0';
     irep->filename = fname;
+    irep->own_filename = TRUE;
   }
 
   irep->nlocals = s->nlocals;
@@ -2954,9 +2958,6 @@ mrb_generate_code(mrb_state *mrb, parser_state *p)
     return proc;
   }
   MRB_CATCH(&scope->jmp) {
-    if (scope->filename == scope->irep->filename) {
-      scope->irep->filename = NULL;
-    }
     mrb_irep_decref(mrb, scope->irep);
     mrb_pool_close(scope->mpool);
     return NULL;
