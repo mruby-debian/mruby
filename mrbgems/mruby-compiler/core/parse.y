@@ -768,14 +768,14 @@ new_dsym(parser_state *p, node *a)
   return cons((node*)NODE_DSYM, new_dstr(p, a));
 }
 
-/* (:str . (a . a)) */
+/* (:regx . (s . (opt . enc))) */
 static node*
 new_regx(parser_state *p, const char *p1, const char* p2, const char* p3)
 {
   return cons((node*)NODE_REGX, cons((node*)p1, cons((node*)p2, (node*)p3)));
 }
 
-/* (:dregx . a) */
+/* (:dregx . (a . b)) */
 static node*
 new_dregx(parser_state *p, node *a, node *b)
 {
@@ -2936,10 +2936,11 @@ var_ref         : variable
                     }
                 | keyword__FILE__
                     {
-                      if (!p->filename) {
-                        p->filename = "(null)";
+                      const char *fn = p->filename;
+                      if (!fn) {
+                        fn = "(null)";
                       }
-                      $$ = new_str(p, p->filename, strlen(p->filename));
+                      $$ = new_str(p, fn, strlen(fn));
                     }
                 | keyword__LINE__
                     {
@@ -3415,7 +3416,7 @@ backref_error(parser_state *p, node *n)
   c = (int)(intptr_t)n->car;
 
   if (c == NODE_NTH_REF) {
-    yyerror_i(p, "can't set variable $%d", (int)(intptr_t)n->cdr);
+    yyerror_i(p, "can't set variable $%" MRB_PRId, (mrb_int)(intptr_t)n->cdr);
   }
   else if (c == NODE_BACK_REF) {
     yyerror_i(p, "can't set variable $%c", (int)(intptr_t)n->cdr);
@@ -3579,7 +3580,7 @@ skips(parser_state *p, const char *s)
     /* skip until first char */
     for (;;) {
       c = nextc(p);
-      if (c < 0) return c;
+      if (c < 0) return FALSE;
       if (c == '\n') {
         p->lineno++;
         p->column = 0;
@@ -4069,6 +4070,10 @@ parse_string(parser_state *p)
         return tSTRING_MID;
       }
     }
+    if (c == '\n') {
+      p->lineno++;
+      p->column = 0;
+    }
     tokadd(p, c);
   }
 
@@ -4119,12 +4124,14 @@ parse_string(parser_state *p)
     }
     if (flag > flags) {
       dup = strndup(flags, (size_t)(flag - flags));
-    } else {
+    }
+    else {
       dup = NULL;
     }
     if (enc) {
       encp = strndup(&enc, 1);
-    } else {
+    }
+    else {
       encp = NULL;
     }
     pylval.nd = new_regx(p, s, dup, encp);
@@ -5507,10 +5514,11 @@ void mrb_parser_dump(mrb_state *mrb, node *tree, int offset);
 MRB_API void
 mrb_parser_parse(parser_state *p, mrbc_context *c)
 {
-  struct mrb_jmpbuf buf;
-  p->jmp = &buf;
+  struct mrb_jmpbuf buf1;
+  p->jmp = &buf1;
 
   MRB_TRY(p->jmp) {
+    int n;
 
     p->cmd_start = TRUE;
     p->in_def = p->in_single = 0;
@@ -5518,7 +5526,25 @@ mrb_parser_parse(parser_state *p, mrbc_context *c)
     p->lex_strterm = NULL;
 
     parser_init_cxt(p, c);
-    if (yyparse(p) != 0 || p->nerr > 0) {
+
+    if (p->mrb->jmp) {
+      n = yyparse(p);
+    }
+    else {
+      struct mrb_jmpbuf buf2;
+
+      p->mrb->jmp = &buf2;
+      MRB_TRY(p->mrb->jmp) {
+        n = yyparse(p);
+      }
+      MRB_CATCH(p->mrb->jmp) {
+        p->nerr++;
+        mrb_p(p->mrb, mrb_obj_value(p->mrb->exc));
+      }
+      MRB_END_EXC(p->mrb->jmp);
+      p->mrb->jmp = 0;
+    }
+    if (n != 0 || p->nerr > 0) {
       p->tree = 0;
       return;
     }
@@ -5529,7 +5555,6 @@ mrb_parser_parse(parser_state *p, mrbc_context *c)
     if (c && c->dump_result) {
       mrb_parser_dump(p->mrb, p->tree, 0);
     }
-
   }
   MRB_CATCH(p->jmp) {
     yyerror(p, "memory allocation error");
@@ -6286,7 +6311,7 @@ mrb_parser_dump(mrb_state *mrb, node *tree, int offset)
     break;
 
   case NODE_NTH_REF:
-    printf("NODE_NTH_REF: $%d\n", (int)(intptr_t)tree);
+    printf("NODE_NTH_REF: $%" MRB_PRId "\n", (mrb_int)(intptr_t)tree);
     break;
 
   case NODE_ARG:
@@ -6338,8 +6363,14 @@ mrb_parser_dump(mrb_state *mrb, node *tree, int offset)
     dump_recur(mrb, tree->car, offset+1);
     dump_prefix(tree, offset);
     printf("tail: %s\n", (char*)tree->cdr->cdr->car);
-    dump_prefix(tree, offset);
-    printf("opt: %s\n", (char*)tree->cdr->cdr->cdr);
+    if (tree->cdr->cdr->cdr->car) {
+      dump_prefix(tree, offset);
+      printf("opt: %s\n", (char*)tree->cdr->cdr->cdr->car);
+    }
+    if (tree->cdr->cdr->cdr->cdr) {
+      dump_prefix(tree, offset);
+      printf("enc: %s\n", (char*)tree->cdr->cdr->cdr->cdr);
+    }
     break;
 
   case NODE_SYM:
