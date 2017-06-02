@@ -956,7 +956,7 @@ gen_assignment(codegen_scope *s, node *tree, int sp, int val)
   int type = (intptr_t)tree->car;
 
   tree = tree->cdr;
-  switch ((intptr_t)type) {
+  switch (type) {
   case NODE_GVAR:
     idx = new_sym(s, sym(tree));
     genop_peep(s, MKOP_ABx(OP_SETGLOBAL, sp, idx), val);
@@ -1006,8 +1006,10 @@ gen_assignment(codegen_scope *s, node *tree, int sp, int val)
     break;
 
   case NODE_CALL:
+  case NODE_SCALL:
     push();
-    gen_call(s, tree, attrsym(s, sym(tree->cdr->car)), sp, NOVAL, 0);
+    gen_call(s, tree, attrsym(s, sym(tree->cdr->car)), sp, NOVAL,
+             type == NODE_SCALL);
     pop();
     if (val) {
       genop_peep(s, MKOP_AB(OP_MOVE, cursp(), sp), val);
@@ -1026,7 +1028,7 @@ gen_assignment(codegen_scope *s, node *tree, int sp, int val)
 #ifndef MRB_DISABLE_STDIO
     fprintf(stderr, "unknown lhs %d\n", type);
 #endif
-    return;
+    break;
   }
   if (val) push();
 }
@@ -1937,9 +1939,19 @@ codegen(codegen_scope *s, node *tree, int val)
 
   case NODE_SUPER:
     {
+      codegen_scope *s2 = s;
+      int lv = 0;
       int n = 0, noop = 0, sendv = 0;
 
       push();        /* room for receiver */
+      while (!s2->mscope) {
+        lv++;
+        s2 = s2->prev;
+        if (!s2) break;
+      }
+      genop(s, MKOP_ABx(OP_ARGARY, cursp(), (lv & 0xf)));
+      push(); push();         /* ARGARY pushes two values */
+      pop(); pop();
       if (tree) {
         node *args = tree->car;
         if (args) {
@@ -2981,6 +2993,7 @@ mrb_generate_code(mrb_state *mrb, parser_state *p)
     proc = mrb_proc_new(mrb, scope->irep);
     mrb_irep_decref(mrb, scope->irep);
     mrb_pool_close(scope->mpool);
+    proc->c = NULL;
     return proc;
   }
   MRB_CATCH(&scope->jmp) {
