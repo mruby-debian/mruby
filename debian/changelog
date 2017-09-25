@@ -1,6 +1,7 @@
 mruby (1.3.0+20170925+git38185028-1) unstable; urgency=medium
 
   * Snapshot, taken from the master (20170925).
+  * Update Standards-Version to 4.1.0.
 
  -- Nobuhiro Iwamatsu <iwamatsu@debian.org>  Tue, 26 Sep 2017 04:22:21 +0900
 
