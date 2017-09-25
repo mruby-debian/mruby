@@ -152,7 +152,7 @@ static mrb_value mrb_fixnum_chr(mrb_state *mrb, mrb_value num);
  *     a.concat(33)   #=> "hello world!"
  */
 static mrb_value
-mrb_str_concat2(mrb_state *mrb, mrb_value self)
+mrb_str_concat_m(mrb_state *mrb, mrb_value self)
 {
   mrb_value str;
 
@@ -601,18 +601,26 @@ mrb_str_upto(mrb_state *mrb, mrb_value beg)
   if (ISDIGIT(RSTRING_PTR(beg)[0]) && ISDIGIT(RSTRING_PTR(end)[0]) &&
       all_digits_p(RSTRING_PTR(beg), RSTRING_LEN(beg)) &&
       all_digits_p(RSTRING_PTR(end), RSTRING_LEN(end))) {
-    int ai = mrb_gc_arena_save(mrb);
     mrb_int min_width = RSTRING_LEN(beg);
-    mrb_int max_width = RSTRING_LEN(end);
     mrb_int bi = mrb_int(mrb, mrb_str_to_inum(mrb, beg, 10, FALSE));
     mrb_int ei = mrb_int(mrb, mrb_str_to_inum(mrb, end, 10, FALSE));
-    mrb_value str = mrb_str_new(mrb, NULL, max_width);
-    char *buf = RSTRING_PTR(str);
+    int ai = mrb_gc_arena_save(mrb);
 
     while (bi <= ei) {
+      mrb_value ns, str;
+
       if (excl && bi == ei) break;
-      snprintf(buf, max_width+1, "%.*" MRB_PRId, (int)min_width, bi);
-      mrb_yield(mrb, block, mrb_str_new(mrb, buf, strlen(buf)));
+      ns = mrb_format(mrb, "%S", mrb_fixnum_value(bi));
+      if (min_width > RSTRING_LEN(ns)) {
+        str = mrb_str_new(mrb, NULL, min_width);
+        memset(RSTRING_PTR(str), '0', min_width-RSTRING_LEN(ns));
+        memcpy(RSTRING_PTR(str)+min_width-RSTRING_LEN(ns),
+               RSTRING_PTR(ns), RSTRING_LEN(ns));
+      }
+      else {
+        str = ns;
+      }
+      mrb_yield(mrb, block, str);
       mrb_gc_arena_restore(mrb, ai);
       bi++;
     }
@@ -653,8 +661,8 @@ mrb_mruby_string_ext_gem_init(mrb_state* mrb)
   mrb_define_method(mrb, s, "byteslice",       mrb_str_byteslice,       MRB_ARGS_REQ(1)|MRB_ARGS_OPT(1));
   mrb_define_method(mrb, s, "swapcase!",       mrb_str_swapcase_bang,   MRB_ARGS_NONE());
   mrb_define_method(mrb, s, "swapcase",        mrb_str_swapcase,        MRB_ARGS_NONE());
-  mrb_define_method(mrb, s, "concat",          mrb_str_concat2,         MRB_ARGS_REQ(1));
-  mrb_define_method(mrb, s, "<<",              mrb_str_concat2,         MRB_ARGS_REQ(1));
+  mrb_define_method(mrb, s, "concat",          mrb_str_concat_m,        MRB_ARGS_REQ(1));
+  mrb_define_method(mrb, s, "<<",              mrb_str_concat_m,        MRB_ARGS_REQ(1));
   mrb_define_method(mrb, s, "start_with?",     mrb_str_start_with,      MRB_ARGS_REST());
   mrb_define_method(mrb, s, "end_with?",       mrb_str_end_with,        MRB_ARGS_REST());
   mrb_define_method(mrb, s, "hex",             mrb_str_hex,             MRB_ARGS_NONE());

@@ -10,7 +10,7 @@
 #include <mruby/class.h>
 #include <mruby/data.h>
 
-#ifndef DISABLE_STDIO
+#ifndef MRB_DISABLE_STDIO
 #include <stdio.h>
 #else
 #include <string.h>
@@ -18,14 +18,9 @@
 
 #define NDIV(x,y) (-(-((x)+1)/(y))-1)
 
-#if _MSC_VER < 1800
+#if defined(_MSC_VER) && _MSC_VER < 1800
 double round(double x) {
-  if (x >= 0.0) {
-    return (double)((int)(x + 0.5));
-  }
-  else {
-    return (double)((int)(x - 0.5));
-  }
+  return floor(x + 0.5);
 }
 #endif
 
@@ -178,7 +173,7 @@ static const mrb_timezone_name timezone_names[] = {
   { "LOCAL", sizeof("LOCAL") - 1 },
 };
 
-#ifndef DISABLE_STDIO
+#ifndef MRB_DISABLE_STDIO
 static const char mon_names[12][4] = {
   "Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec",
 };
@@ -546,7 +541,7 @@ mrb_time_asctime(mrb_state *mrb, mrb_value self)
   struct tm *d = &tm->datetime;
   int len;
 
-#if defined(DISABLE_STDIO)
+#if defined(MRB_DISABLE_STDIO)
   char *s;
 # ifdef NO_ASCTIME_R
   s = asctime(d);
