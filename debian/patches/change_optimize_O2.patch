@@ -1,8 +1,8 @@
-diff --git a/tasks/mruby_build.rake b/tasks/mruby_build.rake
-index 9f8b4ed..64384d2 100644
---- a/tasks/mruby_build.rake
-+++ b/tasks/mruby_build.rake
-@@ -100,7 +100,7 @@ module MRuby
+diff --git a/lib/mruby/build.rb b/lib/mruby/build.rb
+index 7d6aa49e..e2538204 100644
+--- a/lib/mruby/build.rb
++++ b/lib/mruby/build.rb
+@@ -104,7 +104,7 @@ module MRuby
        compilers.each do |c|
          c.defines += %w(MRB_DEBUG)
          if toolchains.any? { |toolchain| toolchain == "gcc" }
