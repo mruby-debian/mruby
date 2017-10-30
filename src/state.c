@@ -18,12 +18,6 @@ void mrb_init_mrbgems(mrb_state*);
 void mrb_gc_init(mrb_state*, mrb_gc *gc);
 void mrb_gc_destroy(mrb_state*, mrb_gc *gc);
 
-static mrb_value
-inspect_main(mrb_state *mrb, mrb_value mod)
-{
-  return mrb_str_new_lit(mrb, "main");
-}
-
 MRB_API mrb_state*
 mrb_open_core(mrb_allocf f, void *ud)
 {
@@ -63,7 +57,7 @@ mrb_default_allocf(mrb_state *mrb, void *p, size_t size, void *ud)
 
 struct alloca_header {
   struct alloca_header *next;
-  char buf[];
+  char buf[1];
 };
 
 MRB_API void*
@@ -135,6 +129,19 @@ mrb_irep_decref(mrb_state *mrb, mrb_irep *irep)
 }
 
 void
+mrb_irep_cutref(mrb_state *mrb, mrb_irep *irep)
+{
+  mrb_irep *tmp;
+  int i;
+
+  for (i=0; i<irep->rlen; i++) {
+    tmp = irep->reps[i];
+    irep->reps[i] = NULL;
+    if (tmp) mrb_irep_decref(mrb, tmp);
+  }
+}
+
+void
 mrb_irep_free(mrb_state *mrb, mrb_irep *irep)
 {
   int i;
@@ -155,10 +162,9 @@ mrb_irep_free(mrb_state *mrb, mrb_irep *irep)
   mrb_free(mrb, irep->pool);
   mrb_free(mrb, irep->syms);
   for (i=0; i<irep->rlen; i++) {
-    mrb_irep_decref(mrb, irep->reps[i]);
+    if (irep->reps[i])
+      mrb_irep_decref(mrb, irep->reps[i]);
   }
-  if (irep->outer)
-    mrb_irep_decref(mrb, irep->outer);
   mrb_free(mrb, irep->reps);
   mrb_free(mrb, irep->lv);
   if (irep->own_filename) {
@@ -216,6 +222,7 @@ mrb_str_pool(mrb_state *mrb, mrb_value str)
       ns->as.heap.ptr[len] = '\0';
     }
   }
+  MRB_SET_FROZEN_FLAG(ns);
   return mrb_obj_value(ns);
 }
 
@@ -272,11 +279,6 @@ mrb_add_irep(mrb_state *mrb)
 MRB_API mrb_value
 mrb_top_self(mrb_state *mrb)
 {
-  if (!mrb->top_self) {
-    mrb->top_self = (struct RObject*)mrb_obj_alloc(mrb, MRB_TT_OBJECT, mrb->object_class);
-    mrb_define_singleton_method(mrb, mrb->top_self, "inspect", inspect_main, MRB_ARGS_NONE());
-    mrb_define_singleton_method(mrb, mrb->top_self, "to_s", inspect_main, MRB_ARGS_NONE());
-  }
   return mrb_obj_value(mrb->top_self);
 }
 

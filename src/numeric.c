@@ -877,7 +877,7 @@ static mrb_value flo_or(mrb_state *mrb, mrb_value x);
 static mrb_value flo_xor(mrb_state *mrb, mrb_value x);
 #define bit_op(x,y,op1,op2) do {\
   if (mrb_fixnum_p(y)) return mrb_fixnum_value(mrb_fixnum(x) op2 mrb_fixnum(y));\
-  return flo_ ## op1(mrb, mrb_float_value(mrb, mrb_fixnum(x)));\
+  return flo_ ## op1(mrb, mrb_float_value(mrb, (mrb_float)mrb_fixnum(x)));\
 } while(0)
 
 /* 15.2.8.3.9  */
@@ -951,7 +951,7 @@ lshift(mrb_state *mrb, mrb_int val, mrb_int width)
         (val   < (MRB_INT_MIN >> width))) {
       goto bit_overflow;
     }
-    return mrb_fixnum_value(val * (1u << width));
+    return mrb_fixnum_value(val * ((mrb_int)1 << width));
   }
 
 bit_overflow:
@@ -1162,7 +1162,7 @@ fix_minus(mrb_state *mrb, mrb_value self)
 
 
 MRB_API mrb_value
-mrb_fixnum_to_str(mrb_state *mrb, mrb_value x, int base)
+mrb_fixnum_to_str(mrb_state *mrb, mrb_value x, mrb_int base)
 {
   char buf[MRB_INT_BIT+1];
   char *b = buf + sizeof buf;
@@ -1254,6 +1254,20 @@ num_cmp(mrb_state *mrb, mrb_value self)
   }
 }
 
+static mrb_value
+num_finite_p(mrb_state *mrb, mrb_value self)
+{
+  mrb_get_args(mrb, "");
+  return mrb_true_value();
+}
+
+static mrb_value
+num_infinite_p(mrb_state *mrb, mrb_value self)
+{
+  mrb_get_args(mrb, "");
+  return mrb_false_value();
+}
+
 /* 15.2.9.3.1  */
 /*
  * call-seq:
@@ -1284,6 +1298,8 @@ mrb_init_numeric(mrb_state *mrb)
   mrb_define_method(mrb, numeric, "/",        num_div,         MRB_ARGS_REQ(1)); /* 15.2.8.3.4  */
   mrb_define_method(mrb, numeric, "quo",      num_div,         MRB_ARGS_REQ(1)); /* 15.2.7.4.5 (x) */
   mrb_define_method(mrb, numeric, "<=>",      num_cmp,         MRB_ARGS_REQ(1)); /* 15.2.9.3.6  */
+  mrb_define_method(mrb, numeric, "finite?",  num_finite_p,    MRB_ARGS_NONE());
+  mrb_define_method(mrb, numeric, "infinite?",num_infinite_p,  MRB_ARGS_NONE());
 
   /* Integer Class */
   integer = mrb_define_class(mrb, "Integer",  numeric);                          /* 15.2.8 */

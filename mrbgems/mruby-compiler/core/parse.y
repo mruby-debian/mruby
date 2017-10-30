@@ -2577,7 +2577,7 @@ do_block        : keyword_do_block
                       local_nest(p);
                     }
                   opt_block_param
-                  compstmt
+                  bodystmt
                   keyword_end
                     {
                       $$ = new_block(p,$3,$4);
@@ -2667,7 +2667,7 @@ brace_block     : '{'
                       $<num>$ = p->lineno;
                     }
                   opt_block_param
-                  compstmt keyword_end
+                  bodystmt keyword_end
                     {
                       $$ = new_block(p,$3,$4);
                       SET_LINENO($$, $<num>2);
@@ -3452,7 +3452,7 @@ backref_error(parser_state *p, node *n)
   c = (int)(intptr_t)n->car;
 
   if (c == NODE_NTH_REF) {
-    yyerror_i(p, "can't set variable $%" MRB_PRId, (mrb_int)(intptr_t)n->cdr);
+    yyerror_i(p, "can't set variable $%" MRB_PRId, (int)(intptr_t)n->cdr);
   }
   else if (c == NODE_BACK_REF) {
     yyerror_i(p, "can't set variable $%c", (int)(intptr_t)n->cdr);
@@ -5078,6 +5078,9 @@ parser_yylex(parser_state *p)
     else if (IS_SPCARG(-1)) {
       c = tLPAREN_ARG;
     }
+    else if (p->lstate == EXPR_END && space_seen) {
+      c = tLPAREN_ARG;
+    }
     p->paren_nest++;
     COND_PUSH(0);
     CMDARG_PUSH(0);
@@ -5497,11 +5500,9 @@ parser_yylex(parser_state *p)
       mrb_sym ident = intern_cstr(tok(p));
 
       pylval.id = ident;
-#if 0
-      if (last_state != EXPR_DOT && islower(tok(p)[0]) && lvar_defined(ident)) {
+      if (last_state != EXPR_DOT && islower(tok(p)[0]) && local_var_p(p, ident)) {
         p->lstate = EXPR_END;
       }
-#endif
     }
     return result;
   }
@@ -5722,7 +5723,7 @@ mrb_parser_set_filename(struct mrb_parser_state *p, const char *f)
 
   new_table = (mrb_sym*)parser_palloc(p, sizeof(mrb_sym) * p->filename_table_length);
   if (p->filename_table) {
-    memmove(new_table, p->filename_table, sizeof(mrb_sym) * p->filename_table_length);
+    memmove(new_table, p->filename_table, sizeof(mrb_sym) * p->current_filename_index);
   }
   p->filename_table = new_table;
   p->filename_table[p->filename_table_length - 1] = sym;
@@ -5824,7 +5825,7 @@ mrb_load_exec(mrb_state *mrb, struct mrb_parser_state *p, mrbc_context *c)
       c->keep_lv = TRUE;
     }
   }
-  proc->target_class = target;
+  MRB_PROC_SET_TARGET_CLASS(proc, target);
   if (mrb->c->ci) {
     mrb->c->ci->target_class = target;
   }

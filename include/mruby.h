@@ -858,11 +858,14 @@ mrb_get_mid(mrb_state *mrb) /* get method symbol */
   return mrb->c->ci->mid;
 }
 
-static inline int
-mrb_get_argc(mrb_state *mrb) /* get argc */
-{
-  return mrb->c->ci->argc;
-}
+/**
+ * Retrieve number of arguments from mrb_state.
+ *
+ * Correctly handles *splat arguments.
+ */
+MRB_API mrb_int mrb_get_argc(mrb_state *mrb);
+
+MRB_API mrb_value* mrb_get_argv(mrb_state *mrb);
 
 /* `strlen` for character string literals (use with caution or `strlen` instead)
     Adjacent string literals are concatenated in C/C++ in translation phase 6.
@@ -1054,7 +1057,7 @@ MRB_API mrb_sym mrb_obj_to_sym(mrb_state *mrb, mrb_value name);
 MRB_API mrb_bool mrb_obj_eq(mrb_state*, mrb_value, mrb_value);
 MRB_API mrb_bool mrb_obj_equal(mrb_state*, mrb_value, mrb_value);
 MRB_API mrb_bool mrb_equal(mrb_state *mrb, mrb_value obj1, mrb_value obj2);
-MRB_API mrb_value mrb_convert_to_integer(mrb_state *mrb, mrb_value val, int base);
+MRB_API mrb_value mrb_convert_to_integer(mrb_state *mrb, mrb_value val, mrb_int base);
 MRB_API mrb_value mrb_Integer(mrb_state *mrb, mrb_value val);
 MRB_API mrb_value mrb_Float(mrb_state *mrb, mrb_value val);
 MRB_API mrb_value mrb_inspect(mrb_state *mrb, mrb_value obj);
@@ -1230,7 +1233,7 @@ MRB_API mrb_value mrb_format(mrb_state *mrb, const char *format, ...);
 /* use naive memcpy and memset instead */
 #undef memcpy
 #undef memset
-static inline void*
+static void*
 mrbmemcpy(void *dst, const void *src, size_t n)
 {
   char *d = (char*)dst;
@@ -1241,7 +1244,7 @@ mrbmemcpy(void *dst, const void *src, size_t n)
 }
 #define memcpy(a,b,c) mrbmemcpy(a,b,c)
 
-static inline void*
+static void*
 mrbmemset(void *s, int c, size_t n)
 {
   char *t = (char*)s;

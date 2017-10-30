@@ -551,7 +551,7 @@ mark_context_stack(mrb_state *mrb, struct mrb_context *c)
   size_t i;
   size_t e;
   mrb_value nil;
-  int nregs;
+  mrb_int nregs;
 
   if (c->stack == NULL) return;
   e = c->stack - c->stbase;
@@ -647,11 +647,8 @@ gc_mark_children(mrb_state *mrb, mrb_gc *gc, struct RBasic *obj)
     {
       struct RProc *p = (struct RProc*)obj;
 
-      mrb_gc_mark(mrb, (struct RBasic*)p->env);
-      mrb_gc_mark(mrb, (struct RBasic*)p->target_class);
-      if (!MRB_PROC_CFUNC_P(p) && p->body.irep) {
-        mrb_gc_mark(mrb, (struct RBasic*)p->body.irep->target_class);
-      }
+      mrb_gc_mark(mrb, (struct RBasic*)p->upper);
+      mrb_gc_mark(mrb, (struct RBasic*)p->e.env);
     }
     break;
 
@@ -660,12 +657,6 @@ gc_mark_children(mrb_state *mrb, mrb_gc *gc, struct RBasic *obj)
       struct REnv *e = (struct REnv*)obj;
       mrb_int i, len;
 
-      if (MRB_ENV_STACK_SHARED_P(e)) {
-        if (e->cxt.c->fib) {
-          mrb_gc_mark(mrb, (struct RBasic*)e->cxt.c->fib);
-        }
-        break;
-      }
       len = MRB_ENV_STACK_LEN(e);
       for (i=0; i<len; i++) {
         mrb_gc_mark_value(mrb, e->stack[i]);
@@ -698,6 +689,10 @@ gc_mark_children(mrb_state *mrb, mrb_gc *gc, struct RBasic *obj)
     break;
 
   case MRB_TT_STRING:
+    if (RSTR_FSHARED_P(obj) && !RSTR_NOFREE_P(obj)) {
+      struct RString *s = (struct RString*)obj;
+      mrb_gc_mark(mrb, (struct RBasic*)s->as.heap.aux.fshared);
+    }
     break;
 
   case MRB_TT_RANGE:
@@ -817,7 +812,11 @@ obj_free(mrb_state *mrb, struct RBasic *obj, int end)
       struct RProc *p = (struct RProc*)obj;
 
       if (!MRB_PROC_CFUNC_P(p) && p->body.irep) {
-        mrb_irep_decref(mrb, p->body.irep);
+        mrb_irep *irep = p->body.irep;
+        if (end) {
+          mrb_irep_cutref(mrb, irep);
+        }
+        mrb_irep_decref(mrb, irep);
       }
     }
     break;
@@ -1389,7 +1388,7 @@ gc_interval_ratio_set(mrb_state *mrb, mrb_value obj)
   mrb_int ratio;
 
   mrb_get_args(mrb, "i", &ratio);
-  mrb->gc.interval_ratio = ratio;
+  mrb->gc.interval_ratio = (int)ratio;
   return mrb_nil_value();
 }
 
@@ -1422,7 +1421,7 @@ gc_step_ratio_set(mrb_state *mrb, mrb_value obj)
   mrb_int ratio;
 
   mrb_get_args(mrb, "i", &ratio);
-  mrb->gc.step_ratio = ratio;
+  mrb->gc.step_ratio = (int)ratio;
   return mrb_nil_value();
 }
 
