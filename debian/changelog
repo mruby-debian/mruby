@@ -1,3 +1,10 @@
+mruby (1.2.0+20161228+git30d5424a-1+deb9u1) stretch; urgency=high
+
+  * Backport patches from 1.3.0. (Closes: #865778)
+    - CVE-2017-9527: heap-based use-after-free
+
+ -- Nobuhiro Iwamatsu <iwamatsu@debian.org>  Tue, 14 Nov 2017 12:40:35 +0900
+
 mruby (1.2.0+20161228+git30d5424a-1) unstable; urgency=medium
 
   * Snapshot, taken from the master (20161228).
