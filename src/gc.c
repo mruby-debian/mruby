@@ -114,7 +114,9 @@ typedef struct {
     struct RException exc;
     struct RBreak brk;
 #ifdef MRB_WORD_BOXING
+#ifndef MRB_WITHOUT_FLOAT
     struct RFloat floatv;
+#endif
     struct RCptr cptr;
 #endif
   } as;
@@ -175,7 +177,7 @@ gettimeofday_time(void)
 
 #define GC_STEP_SIZE 1024
 
-/* white: 011, black: 100, gray: 000 */
+/* white: 001 or 010, black: 100, gray: 000 */
 #define GC_GRAY 0
 #define GC_WHITE_A 1
 #define GC_WHITE_B (1 << 1)
@@ -412,7 +414,7 @@ gc_protect(mrb_state *mrb, mrb_gc *gc, struct RBasic *p)
 #else
   if (gc->arena_idx >= gc->arena_capa) {
     /* extend arena */
-    gc->arena_capa = (int)(gc->arena_capa * 1.5);
+    gc->arena_capa = (int)(gc->arena_capa * 3 / 2);
     gc->arena = (struct RBasic**)mrb_realloc(mrb, gc->arena, sizeof(struct RBasic*)*gc->arena_capa);
   }
 #endif
@@ -597,8 +599,7 @@ mark_context(mrb_state *mrb, struct mrb_context *c)
     }
   }
   /* mark ensure stack */
-  for (i=0; i<c->esize; i++) {
-    if (c->ensure[i] == NULL) break;
+  for (i=0; i<c->eidx; i++) {
     mrb_gc_mark(mrb, (struct RBasic*)c->ensure[i]);
   }
   /* mark fibers */
@@ -657,6 +658,9 @@ gc_mark_children(mrb_state *mrb, mrb_gc *gc, struct RBasic *obj)
       struct REnv *e = (struct REnv*)obj;
       mrb_int i, len;
 
+      if (MRB_ENV_STACK_SHARED_P(e) && e->cxt->fib) {
+        mrb_gc_mark(mrb, (struct RBasic*)e->cxt->fib);
+      }
       len = MRB_ENV_STACK_LEN(e);
       for (i=0; i<len; i++) {
         mrb_gc_mark_value(mrb, e->stack[i]);
@@ -732,11 +736,13 @@ obj_free(mrb_state *mrb, struct RBasic *obj, int end)
     /* cannot happen */
     return;
 
+#ifndef MRB_WITHOUT_FLOAT
   case MRB_TT_FLOAT:
 #ifdef MRB_WORD_BOXING
     break;
 #else
     return;
+#endif
 #endif
 
   case MRB_TT_OBJECT:
@@ -868,7 +874,9 @@ root_scan_phase(mrb_state *mrb, mrb_gc *gc)
   mrb_gc_mark(mrb, (struct RBasic*)mrb->hash_class);
   mrb_gc_mark(mrb, (struct RBasic*)mrb->range_class);
 
+#ifndef MRB_WITHOUT_FLOAT
   mrb_gc_mark(mrb, (struct RBasic*)mrb->float_class);
+#endif
   mrb_gc_mark(mrb, (struct RBasic*)mrb->fixnum_class);
   mrb_gc_mark(mrb, (struct RBasic*)mrb->true_class);
   mrb_gc_mark(mrb, (struct RBasic*)mrb->false_class);
@@ -1485,7 +1493,6 @@ gc_each_objects(mrb_state *mrb, mrb_gc *gc, mrb_each_object_callback *callback, 
 {
   mrb_heap_page* page;
 
-  mrb_full_gc(mrb);
   page = gc->heaps;
   while (page != NULL) {
     RVALUE *p;
@@ -1505,6 +1512,7 @@ mrb_objspace_each_objects(mrb_state *mrb, mrb_each_object_callback *callback, vo
 {
   mrb_bool iterating = mrb->gc.iterating;
 
+  mrb_full_gc(mrb);
   mrb->gc.iterating = TRUE;
   if (iterating) {
     gc_each_objects(mrb, &mrb->gc, callback, data);

@@ -635,7 +635,6 @@ mrb_vm_cv_get(mrb_state *mrb, mrb_sym sym)
   struct RClass *c;
 
   c = MRB_PROC_TARGET_CLASS(mrb->c->ci->proc);
-  if (!c) c = mrb->c->ci->target_class;
   return mrb_mod_cv_get(mrb, c, sym);
 }
 
@@ -645,7 +644,6 @@ mrb_vm_cv_set(mrb_state *mrb, mrb_sym sym, mrb_value v)
   struct RClass *c;
 
   c = MRB_PROC_TARGET_CLASS(mrb->c->ci->proc);
-  if (!c) c = mrb->c->ci->target_class;
   mrb_mod_cv_set(mrb, c, sym, v);
 }
 
@@ -668,7 +666,6 @@ const_get(mrb_state *mrb, struct RClass *base, mrb_sym sym, mrb_bool top)
 {
   struct RClass *c = base;
   mrb_value v;
-  iv_tbl *t;
   mrb_bool retry = FALSE;
   mrb_value name;
   struct RClass *oclass = mrb->object_class;
@@ -676,14 +673,13 @@ const_get(mrb_state *mrb, struct RClass *base, mrb_sym sym, mrb_bool top)
 L_RETRY:
   while (c) {
     if (c->iv && (top || c != oclass || base == oclass)) {
-      t = c->iv;
-      if (iv_get(mrb, t, sym, &v))
+      if (iv_get(mrb, c->iv, sym, &v))
         return v;
     }
     c = c->super;
   }
-  if (!retry && base && base->tt == MRB_TT_MODULE) {
-    c = mrb->object_class;
+  if (!retry && base->tt == MRB_TT_MODULE) {
+    c = oclass;
     retry = TRUE;
     goto L_RETRY;
   }
@@ -707,9 +703,6 @@ mrb_vm_const_get(mrb_state *mrb, mrb_sym sym)
   struct RProc *proc;
 
   c = MRB_PROC_TARGET_CLASS(mrb->c->ci->proc);
-  if (!c) c = mrb->c->ci->target_class;
-  mrb_assert(c != NULL);
-
   if (c->iv && iv_get(mrb, c->iv, sym, &v)) {
     return v;
   }
@@ -746,7 +739,9 @@ mrb_const_set(mrb_state *mrb, mrb_value mod, mrb_sym sym, mrb_value v)
 void
 mrb_vm_const_set(mrb_state *mrb, mrb_sym sym, mrb_value v)
 {
-  struct RClass *c = mrb->c->ci->target_class;
+  struct RClass *c;
+
+  c = MRB_PROC_TARGET_CLASS(mrb->c->ci->proc);
   mrb_obj_iv_set(mrb, (struct RObject*)c, sym, v);
 }
 
@@ -892,7 +887,7 @@ mrb_const_defined_0(mrb_state *mrb, mrb_value mod, mrb_sym id, mrb_bool exclude,
 {
   struct RClass *klass = mrb_class_ptr(mod);
   struct RClass *tmp;
-  mrb_bool mod_retry = 0;
+  mrb_bool mod_retry = FALSE;
 
   tmp = klass;
 retry:
@@ -904,7 +899,7 @@ retry:
     tmp = tmp->super;
   }
   if (!exclude && !mod_retry && (klass->tt == MRB_TT_MODULE)) {
-    mod_retry = 1;
+    mod_retry = TRUE;
     tmp = mrb->object_class;
     goto retry;
   }

@@ -528,6 +528,10 @@ done:
       /* no evaluation of code */
     }
     else {
+      if (0 < parser->nwarn) {
+        /* warning */
+        printf("line %d: %s\n", parser->warn_buffer[0].lineno, parser->warn_buffer[0].message);
+      }
       if (0 < parser->nerr) {
         /* syntax error */
         printf("line %d: %s\n", parser->error_buffer[0].lineno, parser->error_buffer[0].message);
@@ -584,6 +588,8 @@ done:
   mrb_free(mrb, history_path);
 #endif
 
+  if (args.rfp) fclose(args.rfp);
+  mrb_free(mrb, args.argv);
   mrbc_context_free(mrb, cxt);
   mrb_close(mrb);
 
