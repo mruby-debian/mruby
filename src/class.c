@@ -430,9 +430,9 @@ mrb_define_method_raw(mrb_state *mrb, struct RClass *c, mrb_sym mid, mrb_method_
 
   if (MRB_FROZEN_P(c)) {
     if (c->tt == MRB_TT_MODULE)
-      mrb_raise(mrb, E_RUNTIME_ERROR, "can't modify frozen module");
+      mrb_raise(mrb, E_FROZEN_ERROR, "can't modify frozen module");
     else
-      mrb_raise(mrb, E_RUNTIME_ERROR, "can't modify frozen class");
+      mrb_raise(mrb, E_FROZEN_ERROR, "can't modify frozen class");
   }
   if (!h) h = c->mt = kh_init(mt, mrb);
   k = kh_put(mt, mrb, h, mid);
@@ -443,8 +443,9 @@ mrb_define_method_raw(mrb_state *mrb, struct RClass *c, mrb_sym mid, mrb_method_
     p->flags |= MRB_PROC_SCOPE;
     p->c = NULL;
     mrb_field_write_barrier(mrb, (struct RBasic*)c, (struct RBasic*)p);
-    MRB_PROC_SET_TARGET_CLASS(p, c);
-    mrb_field_write_barrier(mrb, (struct RBasic*)p, (struct RBasic*)c);
+    if (!MRB_PROC_ENV_P(p)) {
+      MRB_PROC_SET_TARGET_CLASS(p, c);
+    }
   }
   mc_clear_by_id(mrb, c, mid);
 }
@@ -1309,9 +1310,9 @@ mrb_singleton_class(mrb_state *mrb, mrb_value v)
   case MRB_TT_FIXNUM:
 #ifndef MRB_WITHOUT_FLOAT
   case MRB_TT_FLOAT:
+#endif
     mrb_raise(mrb, E_TYPE_ERROR, "can't define singleton");
     return mrb_nil_value();    /* not reached */
-#endif
   default:
     break;
   }
@@ -1398,6 +1399,7 @@ mrb_method_search_vm(mrb_state *mrb, struct RClass **cp, mrb_sym mid)
   struct mrb_cache_entry *mc = &mrb->cache[h];
 
   if (mc->c == c && mc->mid == mid) {
+    *cp = mc->c0;
     return mc->m;
   }
 #endif
@@ -1413,6 +1415,7 @@ mrb_method_search_vm(mrb_state *mrb, struct RClass **cp, mrb_sym mid)
         *cp = c;
 #ifdef MRB_METHOD_CACHE
         mc->c = oc;
+        mc->c0 = c;
         mc->mid = mid;
         mc->m = m;
 #endif
