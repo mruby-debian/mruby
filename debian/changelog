@@ -2,6 +2,7 @@ mruby (1.4.0-1) unstable; urgency=medium
 
   * New upstream release(1.4.0).
   * Change Vcs-Git to use https.
+  * Update secure copyright format URI.
 
  -- Akira Mitsui <murase.syuka@gmail.com>  Sun, 04 Feb 2018 11:08:22 +0900
 
