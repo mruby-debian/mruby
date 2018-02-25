@@ -4,13 +4,13 @@ Source: https://github.com/mruby/mruby
 
 Files: *
 Copyright: Copyright (c) 2010-2013 mruby developers
-License: MIT
+License: Expat
 
 Files: debian/*
 Copyright: 2013 Nobuhiro Iwamatsu <iwamatsu@debian.org>
-License: MIT
+License: Expat
 
-License: MIT
+License: Expat
  Permission is hereby granted, free of charge, to any person obtaining a
  copy of this software and associated documentation files (the "Software"),
  to deal in the Software without restriction, including without limitation
