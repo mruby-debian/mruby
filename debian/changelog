@@ -1,3 +1,9 @@
+mruby (1.4.0+20180418+git54905e98-1) UNRELEASED; urgency=medium
+
+  * Update from stable branch(20180418).
+
+ -- Nobuhiro Iwamatsu <iwamatsu@debian.org>  Fri, 20 Apr 2018 08:29:33 +0900
+
 mruby (1.4.0-1) unstable; urgency=medium
 
   * New upstream release(1.4.0).
