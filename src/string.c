@@ -926,7 +926,7 @@ mrb_str_cmp_m(mrb_state *mrb, mrb_value str1)
     else {
       mrb_value tmp = mrb_funcall(mrb, str2, "<=>", 1, str1);
 
-      if (!mrb_nil_p(tmp)) return mrb_nil_value();
+      if (mrb_nil_p(tmp)) return mrb_nil_value();
       if (!mrb_fixnum_p(tmp)) {
         return mrb_funcall(mrb, mrb_fixnum_value(0), "-", 1, tmp);
       }
@@ -2167,8 +2167,13 @@ mrb_str_len_to_inum(mrb_state *mrb, const char *str, mrb_int len, mrb_int base, 
     n *= base;
     n += c;
     if (n > (uint64_t)MRB_INT_MAX + (sign ? 0 : 1)) {
-      mrb_raisef(mrb, E_ARGUMENT_ERROR, "string (%S) too big for integer",
-                 mrb_str_new(mrb, str, pend-str));
+      if (base == 10) {
+        return mrb_float_value(mrb, mrb_str_to_dbl(mrb, mrb_str_new(mrb, str, len), badcheck));
+      }
+      else {
+        mrb_raisef(mrb, E_ARGUMENT_ERROR, "string (%S) too big for integer",
+                   mrb_str_new(mrb, str, pend-str));
+      }
     }
   }
   val = (mrb_int)n;
@@ -2542,10 +2547,10 @@ mrb_str_dump(mrb_state *mrb, mrb_value str)
         }
         else {
           *q++ = '\\';
-          q[2] = '0' + c % 8; c /= 8;
-          q[1] = '0' + c % 8; c /= 8;
-          q[0] = '0' + c % 8;
-          q += 3;
+          *q++ = 'x';
+          q[1] = mrb_digitmap[c % 16]; c /= 16;
+          q[0] = mrb_digitmap[c % 16];
+          q += 2;
         }
     }
   }
@@ -2685,9 +2690,9 @@ mrb_str_inspect(mrb_state *mrb, mrb_value str)
     }
     else {
       buf[0] = '\\';
-      buf[3] = '0' + c % 8; c /= 8;
-      buf[2] = '0' + c % 8; c /= 8;
-      buf[1] = '0' + c % 8;
+      buf[1] = 'x';
+      buf[3] = mrb_digitmap[c % 16]; c /= 16;
+      buf[2] = mrb_digitmap[c % 16];
       mrb_str_cat(mrb, result, buf, 4);
       continue;
     }

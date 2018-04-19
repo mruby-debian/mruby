@@ -180,7 +180,7 @@ mrb_io_flags_to_modenum(mrb_state *mrb, int flags)
   return modenum;
 }
 
-void
+static void
 mrb_fd_cloexec(mrb_state *mrb, int fd)
 {
 #if defined(F_GETFD) && defined(F_SETFD) && defined(FD_CLOEXEC)
@@ -188,7 +188,8 @@ mrb_fd_cloexec(mrb_state *mrb, int fd)
 
   flags = fcntl(fd, F_GETFD);
   if (flags == -1) {
-    mrb_sys_fail(mrb, "fcntl");
+    mrb_bug(mrb, "mrb_fd_cloexec: fcntl(%S, F_GETFD) failed: %S",
+      mrb_fixnum_value(fd), mrb_fixnum_value(errno));
   }
   if (fd <= 2) {
     flags2 = flags & ~FD_CLOEXEC; /* Clear CLOEXEC for standard file descriptors: 0, 1, 2. */
@@ -198,7 +199,8 @@ mrb_fd_cloexec(mrb_state *mrb, int fd)
   }
   if (flags != flags2) {
     if (fcntl(fd, F_SETFD, flags2) == -1) {
-      mrb_sys_fail(mrb, "fcntl");
+      mrb_bug(mrb, "mrb_fd_cloexec: fcntl(%S, F_SETFD, %S) failed: %S",
+        mrb_fixnum_value(fd), mrb_fixnum_value(flags2), mrb_fixnum_value(errno));
     }
   }
 #endif
@@ -540,12 +542,12 @@ mrb_dup(mrb_state *mrb, int fd, mrb_bool *failed)
 {
   int new_fd;
 
-  *failed = FALSE;
+  *failed = TRUE;
   if (fd < 0)
     return fd;
 
   new_fd = dup(fd);
-  if (new_fd == -1) *failed = TRUE;
+  if (new_fd > 0) *failed = FALSE;
   return new_fd;
 }
 
@@ -559,13 +561,14 @@ mrb_io_initialize_copy(mrb_state *mrb, mrb_value copy)
   mrb_bool failed = TRUE;
 
   mrb_get_args(mrb, "o", &orig);
+  fptr_orig = io_get_open_fptr(mrb, orig);
   fptr_copy = (struct mrb_io *)DATA_PTR(copy);
+  if (fptr_orig == fptr_copy) return copy;
   if (fptr_copy != NULL) {
     fptr_finalize(mrb, fptr_copy, FALSE);
     mrb_free(mrb, fptr_copy);
   }
   fptr_copy = (struct mrb_io *)mrb_io_alloc(mrb);
-  fptr_orig = io_get_open_fptr(mrb, orig);
 
   DATA_TYPE(copy) = &mrb_io_type;
   DATA_PTR(copy) = fptr_copy;
@@ -577,11 +580,17 @@ mrb_io_initialize_copy(mrb_state *mrb, mrb_value copy)
   if (failed) {
     mrb_sys_fail(mrb, 0);
   }
-  fptr_copy->fd2 = mrb_dup(mrb, fptr_orig->fd2, &failed);
-  if (failed) {
-    close(fptr_copy->fd);
-    mrb_sys_fail(mrb, 0);
+  mrb_fd_cloexec(mrb, fptr_copy->fd);
+
+  if (fptr_orig->fd2 != -1) {
+    fptr_copy->fd2 = mrb_dup(mrb, fptr_orig->fd2, &failed);
+    if (failed) {
+      close(fptr_copy->fd);
+      mrb_sys_fail(mrb, 0);
+    }
+    mrb_fd_cloexec(mrb, fptr_copy->fd2);
   }
+
   fptr_copy->pid = fptr_orig->pid;
   fptr_copy->readable = fptr_orig->readable;
   fptr_copy->writable = fptr_orig->writable;
@@ -676,7 +685,7 @@ fptr_finalize(mrb_state *mrb, struct mrb_io *fptr, int quiet)
       io_set_process_status(mrb, pid, status);
     }
 #else
-    HANDLE h = OpenProcess(PROCESS_QUERY_INFORMATION, FALSE, fptr->pid); 
+    HANDLE h = OpenProcess(PROCESS_QUERY_INFORMATION, FALSE, fptr->pid);
     DWORD status;
     if (WaitForSingleObject(h, INFINITE) && GetExitCodeProcess(h, &status))
       if (!quiet)

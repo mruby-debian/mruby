@@ -101,7 +101,7 @@ static inline void
 stack_clear(mrb_value *from, size_t count)
 {
 #ifndef MRB_NAN_BOXING
-  const mrb_value mrb_value_zero = { { 0 } };
+  const mrb_value mrb_value_zero = { 0 };
 
   while (count-- > 0) {
     *from++ = mrb_value_zero;
@@ -156,6 +156,18 @@ envadjust(mrb_state *mrb, mrb_value *oldbase, mrb_value *newbase, size_t size)
 
       e->stack = newbase + off;
     }
+
+    if (ci->proc && MRB_PROC_ENV_P(ci->proc) && ci->env != MRB_PROC_ENV(ci->proc)) {
+      e = MRB_PROC_ENV(ci->proc);
+
+      if (e && MRB_ENV_STACK_SHARED_P(e) &&
+          (st = e->stack) && oldbase <= st && st < oldbase+size) {
+        ptrdiff_t off = e->stack - oldbase;
+
+        e->stack = newbase + off;
+      }
+    }
+
     ci->stackent = newbase + (ci->stackent - oldbase);
     ci++;
   }
@@ -516,7 +528,7 @@ mrb_exec_irep(mrb_state *mrb, mrb_value self, struct RProc *p)
   }
   ci->nregs = p->body.irep->nregs;
   if (ci->argc < 0) keep = 3;
-  else keep = ci->argc + 1;
+  else keep = ci->argc + 2;
   if (ci->nregs < keep) {
     stack_extend(mrb, keep);
   }
@@ -936,12 +948,7 @@ mrb_vm_run(mrb_state *mrb, struct RProc *proc, mrb_value self, unsigned int stac
   if (c->ci - c->cibase > cioff) {
     c->ci = c->cibase + cioff;
   }
-  if (mrb->c != c) {
-    if (mrb->c->fib) {
-      mrb_write_barrier(mrb, (struct RBasic*)mrb->c->fib);
-    }
-    mrb->c = c;
-  }
+  mrb->c = c;
   return result;
 }
 
@@ -1189,11 +1196,11 @@ RETRY_TRY_BLOCK:
       mrb_value *regs_a = regs + a;
       struct REnv *e = uvenv(mrb, c);
 
-      if (!e) {
-        *regs_a = mrb_nil_value();
+      if (e && b < MRB_ENV_STACK_LEN(e)) {
+        *regs_a = e->stack[b];
       }
       else {
-        *regs_a = e->stack[b];
+        *regs_a = mrb_nil_value();
       }
       NEXT;
     }
@@ -1351,6 +1358,7 @@ RETRY_TRY_BLOCK:
       for (n=0; n<a; n++) {
         proc = mrb->c->ensure[epos+n];
         mrb->c->ensure[epos+n] = NULL;
+        if (proc == NULL) continue;
         irep = proc->body.irep;
         ci = cipush(mrb);
         ci->mid = ci[-1].mid;
@@ -1661,6 +1669,9 @@ RETRY_TRY_BLOCK:
       if (MRB_METHOD_CFUNC_P(m)) {
         mrb_value v;
         ci->nregs = (argc < 0) ? 3 : n+2;
+        if (MRB_METHOD_PROC_P(m)) {
+          ci->proc = MRB_METHOD_PROC(m);
+        }
         v = MRB_METHOD_CFUNC(m)(mrb, recv);
         mrb_gc_arena_restore(mrb, ai);
         if (mrb->exc) goto L_RAISE;
@@ -1929,9 +1940,6 @@ RETRY_TRY_BLOCK:
                 while (c->eidx > ci->epos) {
                   ecall_adjust();
                 }
-                if (c->fib) {
-                  mrb_write_barrier(mrb, (struct RBasic*)c->fib);
-                }
                 mrb->c->status = MRB_FIBER_TERMINATED;
                 mrb->c = c->prev;
                 c->prev = NULL;
@@ -1995,6 +2003,7 @@ RETRY_TRY_BLOCK:
             }
             break;
           }
+          /* fallthrough */
         case OP_R_NORMAL:
         NORMAL_RETURN:
           if (ci == mrb->c->cibase) {
@@ -2038,9 +2047,6 @@ RETRY_TRY_BLOCK:
           else {
             struct REnv *e = MRB_PROC_ENV(proc);
 
-            if (e == mrb->c->cibase->env && proc != mrb->c->cibase->proc) {
-              goto L_BREAK_ERROR;
-            }
             if (e->cxt != mrb->c) {
               goto L_BREAK_ERROR;
             }
@@ -2934,9 +2940,6 @@ RETRY_TRY_BLOCK:
     CASE(OP_STOP) {
       /*        stop VM */
     L_STOP:
-      while (mrb->c->ci > mrb->c->cibase) {
-        cipop(mrb);
-      }
       while (mrb->c->eidx > 0) {
         ecall(mrb);
       }
