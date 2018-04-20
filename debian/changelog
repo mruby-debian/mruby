@@ -5,6 +5,7 @@ mruby (1.4.0+20180418+git54905e98-1) unstable; urgency=medium
       Use after free caused by integer overflow in environment stack
     - Fix CVE-2018-10199.(Closes: #896021)
       Use after free in File#initilialize_copy
+  * Bump Standards-Version to 4.1.4.
 
  -- Nobuhiro Iwamatsu <iwamatsu@debian.org>  Fri, 20 Apr 2018 08:29:33 +0900
 
