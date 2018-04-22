@@ -1,0 +1,25 @@
+From cb499ad60c738c2ebe828975517a448a692012b4 Mon Sep 17 00:00:00 2001
+From: Nobuhiro Iwamatsu <iwamatsu@nigauri.org>
+Date: Sun, 22 Apr 2018 10:38:30 +0900
+Subject: [PATCH] Skip mruby io test if there is no /dev/tty
+
+Signed-off-by: Nobuhiro Iwamatsu <iwamatsu@nigauri.org>
+---
+ mrbgems/mruby-io/test/io.rb | 1 +
+ 1 file changed, 1 insertion(+)
+
+diff --git a/mrbgems/mruby-io/test/io.rb b/mrbgems/mruby-io/test/io.rb
+index e06b1499..07d49539 100644
+--- a/mrbgems/mruby-io/test/io.rb
++++ b/mrbgems/mruby-io/test/io.rb
+@@ -344,6 +344,7 @@ end
+ 
+ assert('IO#isatty') do
+   skip "isatty is not supported on this platform" if MRubyIOTestUtil.win?
++  skip "Test plathome does not have /dev/tty" if !File.exist?("/dev/tty")
+   f1 = File.open("/dev/tty")
+   f2 = File.open($mrbtest_io_rfname)
+ 
+-- 
+2.17.0
+

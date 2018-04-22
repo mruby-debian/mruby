@@ -1,3 +1,11 @@
+mruby (1.4.0+20180418+git54905e98-2) unstable; urgency=medium
+
+  * Fix FTBFS RuntimeError: IO#isatty => open /dev/tty (mrbgems: mruby-io)
+    Add patches/Skip-mruby-io-test-if-there-is-no-dev-tty.patch.
+    (Closes: #896162)
+
+ -- Nobuhiro Iwamatsu <iwamatsu@debian.org>  Sun, 22 Apr 2018 12:17:43 +0900
+
 mruby (1.4.0+20180418+git54905e98-1) unstable; urgency=medium
 
   * Update from stable branch(20180418).
