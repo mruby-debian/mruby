@@ -1,0 +1,32 @@
+From 05f1f448affb3574353a974c0443eaea445b60c2 Mon Sep 17 00:00:00 2001
+From: Nobuhiro Iwamatsu <iwamatsu@nigauri.org>
+Date: Thu, 10 May 2018 08:28:10 +0900
+Subject: [PATCH] Add check function for endian
+
+Signed-off-by: Nobuhiro Iwamatsu <iwamatsu@nigauri.org>
+---
+ lib/mruby/build.rb | 8 ++++++++
+ 1 file changed, 8 insertions(+)
+
+diff --git a/lib/mruby/build.rb b/lib/mruby/build.rb
+index 645aad98..d0f37237 100644
+--- a/lib/mruby/build.rb
++++ b/lib/mruby/build.rb
+@@ -111,6 +111,14 @@ module MRuby
+       @mrbc.compile_options += ' -g'
+     end
+ 
++    def set_endian
++      if "\x01\00".unpack('S')[0] == 1
++        little_endian
++      else
++        big_endian
++      end
++    end
++
+     def big_endian
+       if @endian
+         puts "Endian has already specified as #{@endian}."
+-- 
+2.17.0
+

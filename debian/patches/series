@@ -1,5 +1,6 @@
 enable_verbose_build.patch
 Change-optimize-O2-on-build-system-of-Debian.patch
 Move-function-of-endian-from-Crossbuild-to-build.patch
+Add-check-function-for-endian.patch
 add_fpic_amd64.patch
 Skip-mruby-tty-test-in-io.patch
