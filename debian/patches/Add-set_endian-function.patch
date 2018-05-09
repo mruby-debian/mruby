@@ -1,0 +1,41 @@
+From a21ccd8f96394a1de3d56066cc64e58aa12a38cb Mon Sep 17 00:00:00 2001
+From: Nobuhiro Iwamatsu <iwamatsu@nigauri.org>
+Date: Thu, 10 May 2018 08:54:18 +0900
+Subject: [PATCH] Add set_endian function
+
+Signed-off-by: Nobuhiro Iwamatsu <iwamatsu@nigauri.org>
+---
+ build_config.rb | 3 +++
+ 1 file changed, 3 insertions(+)
+
+diff --git a/build_config.rb b/build_config.rb
+index 1429837b..cb113bd9 100644
+--- a/build_config.rb
++++ b/build_config.rb
+@@ -9,6 +9,7 @@ MRuby::Build.new do |conf|
+   end
+ 
+   enable_debug
++  set_endian
+ 
+   # Use mrbgems
+   # conf.gem 'examples/mrbgems/ruby_extension_example'
+@@ -95,6 +96,7 @@ MRuby::Build.new('host-debug') do |conf|
+   end
+ 
+   enable_debug
++  set_endian
+ 
+   # include the default GEMs
+   conf.gembox 'default'
+@@ -118,6 +120,7 @@ MRuby::Build.new('test') do |conf|
+   end
+ 
+   enable_debug
++  set_endian
+   conf.enable_bintest
+   conf.enable_test
+ 
+-- 
+2.17.0
+
