@@ -1,4 +1,4 @@
 enable_verbose_build.patch
-change_optimize_O2.patch
+Change-optimize-O2-on-build-system-of-Debian.patch
 add_fpic_amd64.patch
 Skip-mruby-tty-test-in-io.patch
