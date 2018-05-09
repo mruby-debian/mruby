@@ -1,0 +1,87 @@
+From 2ce496c9ef44e47d057f22407204571cce92bcfb Mon Sep 17 00:00:00 2001
+From: Nobuhiro Iwamatsu <iwamatsu@nigauri.org>
+Date: Thu, 10 May 2018 08:22:56 +0900
+Subject: [PATCH] Move function of endian from Crossbuild to build
+
+Signed-off-by: Nobuhiro Iwamatsu <iwamatsu@nigauri.org>
+---
+ lib/mruby/build.rb | 43 ++++++++++++++++++++++---------------------
+ 1 file changed, 22 insertions(+), 21 deletions(-)
+
+diff --git a/lib/mruby/build.rb b/lib/mruby/build.rb
+index f1bc160d..645aad98 100644
+--- a/lib/mruby/build.rb
++++ b/lib/mruby/build.rb
+@@ -89,6 +89,7 @@ module MRuby
+         @enable_bintest = false
+         @enable_test = false
+         @toolchains = []
++        @endian = nil
+ 
+         MRuby.targets[@name] = self
+       end
+@@ -110,6 +111,27 @@ module MRuby
+       @mrbc.compile_options += ' -g'
+     end
+ 
++    def big_endian
++      if @endian
++        puts "Endian has already specified as #{@endian}."
++        return
++      end
++      @endian = :big
++      @mrbc.compile_options += ' -E'
++      compilers.each do |c|
++        c.defines += %w(MRB_ENDIAN_BIG)
++      end
++    end
++
++    def little_endian
++      if @endian
++        puts "Endian has already specified as #{@endian}."
++        return
++      end
++      @endian = :little
++      @mrbc.compile_options += ' -e'
++    end
++
+     def disable_cxx_exception
+       if @cxx_exception_enabled or @cxx_abi_enabled
+         raise "cxx_exception already enabled"
+@@ -334,7 +356,6 @@ EOS
+     attr_accessor :host_target, :build_target
+ 
+     def initialize(name, build_dir=nil, &block)
+-      @endian = nil
+       @test_runner = Command::CrossTestRunner.new(self)
+       super
+     end
+@@ -354,25 +375,5 @@ EOS
+       end
+     end
+ 
+-    def big_endian
+-      if @endian
+-        puts "Endian has already specified as #{@endian}."
+-        return
+-      end
+-      @endian = :big
+-      @mrbc.compile_options += ' -E'
+-      compilers.each do |c|
+-        c.defines += %w(MRB_ENDIAN_BIG)
+-      end
+-    end
+-
+-    def little_endian
+-      if @endian
+-        puts "Endian has already specified as #{@endian}."
+-        return
+-      end
+-      @endian = :little
+-      @mrbc.compile_options += ' -e'
+-    end
+   end # CrossBuild
+ end # MRuby
+-- 
+2.17.0
+
