@@ -1,3 +1,12 @@
+mruby (1.4.1-2) unstable; urgency=medium
+
+  * Fix test on big-endian (Closes: #897087)
+    Add Fix-test-on-big-endian-CPUs.patch, Add-set_endian-function.patch and
+    Add-check-function-for-endian.patch and
+    Move-function-of-endian-from-Crossbuild-to-build.patch
+
+ -- Nobuhiro Iwamatsu <iwamatsu@debian.org>  Thu, 10 May 2018 13:13:40 +0900
+
 mruby (1.4.1-1) unstable; urgency=medium
 
   * New upstream release (1.4.1).
