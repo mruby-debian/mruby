@@ -300,6 +300,7 @@ mrb_env_unshare(mrb_state *mrb, struct REnv *e)
 
     if (!MRB_ENV_STACK_SHARED_P(e)) return;
     if (e->cxt != mrb->c) return;
+    if (e == mrb->c->cibase->env) return; /* for mirb */
     p = (mrb_value *)mrb_malloc(mrb, sizeof(mrb_value)*len);
     if (len > 0) {
       stack_copy(p, e->stack, len);
@@ -527,6 +528,8 @@ mrb_exec_irep(mrb_state *mrb, mrb_value self, struct RProc *p)
     return MRB_PROC_CFUNC(p)(mrb, self);
   }
   ci->nregs = p->body.irep->nregs;
+  ci->env = MRB_PROC_ENV(p);
+  if (ci->env) ci->env->stack[0] = self;
   if (ci->argc < 0) keep = 3;
   else keep = ci->argc + 2;
   if (ci->nregs < keep) {
@@ -2704,7 +2707,7 @@ RETRY_TRY_BLOCK:
     }
 
     CASE(OP_APOST) {
-      /* A B C  *R(A),R(A+1)..R(A+C) := R(A) */
+      /* A B C  *R(A),R(A+1)..R(A+C) := R(A)[B..] */
       int a = GETARG_A(i);
       mrb_value v = regs[a];
       int pre  = GETARG_B(i);
