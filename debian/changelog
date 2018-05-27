@@ -1,3 +1,9 @@
+mruby (1.4.1+20180527+git14c21793-1) unstable; urgency=medium
+
+  * Snapshot, taken from the master (20180527).
+
+ -- Akira Mitsui <murase.syuka@gmail.com>  Sun, 27 May 2018 14:41:01 +0900
+
 mruby (1.4.1-2) unstable; urgency=medium
 
   * Fix test on big-endian (Closes: #897087)
