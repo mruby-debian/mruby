@@ -599,13 +599,13 @@ done:
         /* warning */
         char* msg = mrb_locale_from_utf8(parser->warn_buffer[0].message, -1);
         printf("line %d: %s\n", parser->warn_buffer[0].lineno, msg);
-        mrb_utf8_free(msg);
+        mrb_locale_free(msg);
       }
       if (0 < parser->nerr) {
         /* syntax error */
         char* msg = mrb_locale_from_utf8(parser->error_buffer[0].message, -1);
         printf("line %d: %s\n", parser->error_buffer[0].lineno, msg);
-        mrb_utf8_free(msg);
+        mrb_locale_free(msg);
       }
       else {
         /* generate bytecode */
@@ -661,6 +661,12 @@ done:
 
   if (args.rfp) fclose(args.rfp);
   mrb_free(mrb, args.argv);
+  if (args.libv) {
+    for (i = 0; i < args.libc; ++i) {
+      mrb_free(mrb, args.libv[i]);
+    }
+    mrb_free(mrb, args.libv);
+  }
   mrbc_context_free(mrb, cxt);
   mrb_close(mrb);
 
