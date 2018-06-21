@@ -3,6 +3,8 @@ mruby (1.4.1+20180622+git640fca32-1) unstable; urgency=medium
   * Snapshot, taken from the master (20180622).
     - Fix CVE-2018-11743, CVE-2018-12249 CVE-2018-12248.
       Closes: #900845 #901652 #901653
+  * Remove patches/Fix-test-on-big-endian-CPUs.patch.
+    Applied to upstream.
 
  -- Nobuhiro Iwamatsu <iwamatsu@debian.org>  Fri, 22 Jun 2018 07:59:03 +0900
 

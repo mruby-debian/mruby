@@ -5,4 +5,3 @@ Add-check-function-for-endian.patch
 Add-set_endian-function.patch
 add_fpic_amd64.patch
 Skip-mruby-tty-test-in-io.patch
-Fix-test-on-big-endian-CPUs.patch
