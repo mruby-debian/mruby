@@ -6,12 +6,10 @@
 
 require 'getoptlong'
 require 'fileutils'
-require 'fiber'
 
 $rake_fiber_table = {}
 $rake_jobs = 1
 $rake_failed = []
-$rake_root_fiber = Fiber.current
 
 class String
   def ext(newext='')
@@ -95,7 +93,7 @@ module MiniRake
     def done?; @done end
     def running?; @running end
 
-    # Invoke the task if it is needed.  Prerequites are invoked first.
+    # Invoke the task if it is needed. Prerequisites are invoked first.
     def invoke
       puts "Invoke #{name} (already=[#{@already_invoked}], needed=[#{needed?}])" if $trace
       return if @already_invoked
@@ -111,7 +109,12 @@ module MiniRake
 
       if needed?
         @running = true
-        return Fiber.new do
+        if $rake_root_fiber
+          return Fiber.new do
+            self.execute
+            $rake_root_fiber.transfer
+          end
+        else
           self.execute
         end
       end
@@ -307,7 +310,7 @@ module MiniRake
     def sh(cmd)
       puts cmd if $verbose
 
-      if $rake_jobs == 1 || Fiber.current == $rake_root_fiber
+      if !$rake_root_fiber || Fiber.current == $rake_root_fiber
         system(cmd) or fail "Command Failed: [#{cmd}]"
         return
       end
@@ -318,7 +321,7 @@ module MiniRake
         command: cmd,
         process_waiter: Process.detach(pid)
       }
-      Fiber.yield
+      $rake_root_fiber.transfer
     end
 
     def desc(text)
@@ -479,6 +482,12 @@ class RakeApp
   # Run the +rake+ application.
   def run
     handle_options
+
+    if $rake_root_fiber
+      require 'fiber'
+      $rake_root_fiber = Fiber.current
+    end
+
     begin
       here = Dir.pwd
       while ! have_rakefile
@@ -531,7 +540,7 @@ class RakeApp
 
             wait_process while $rake_fiber_table.size >= $rake_jobs
 
-            f.resume
+            f.transfer
           end
         end
 
@@ -561,8 +570,9 @@ class RakeApp
     exit 1
   end
 
-  def wait_process
-    sleep 0.1
+  def wait_process(count = 0)
+    dur = [0.0001 * (10 ** count), 1].min
+    sleep dur
 
     exited = []
     $rake_fiber_table.each do |pid, v|
@@ -580,11 +590,14 @@ class RakeApp
         raise "Command Failed: [#{ent[:command]}]"
       end
 
-      wait_process while $rake_fiber_table.size >= $rake_jobs
+      fail 'task scheduling bug!' if $rake_fiber_table.size >= $rake_jobs
 
-      ent[:fiber].resume
+      ent[:fiber].transfer
     end
+
+    wait_process(count + 1) if !$rake_fiber_table.empty? && exited.empty?
   end
+
 end
 
 if __FILE__ == $0 then

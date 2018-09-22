@@ -185,3 +185,45 @@ The re-defined ```+``` operator does not accept any arguments.
 
 ``` 'ab' ```
 Behavior of the operator wasn't changed.
+
+## Kernel#binding is not supported
+
+`Kernel#binding` method is not supported.
+
+#### Ruby [ruby 2.5.1p57 (2018-03-29 revision 63029)]
+
+```
+$ ruby -e 'puts Proc.new {}.binding'
+#<Binding:0x00000e9deabb9950>
+```
+
+#### mruby [1.4.1 (2018-4-27)]
+
+```
+$ ./bin/mruby -e 'puts Proc.new {}.binding'
+trace (most recent call last):
+        [0] -e:1
+-e:1: undefined method 'binding' (NoMethodError)
+```
+
+## Keyword arguments
+
+mruby keyword arguments behave slightly different from CRuby 2.5
+to make the behavior simpler and less confusing. Maybe in the
+future, the simpler behavior will be adopted to CRuby as well.
+
+#### Ruby [ruby 2.5.1p57 (2018-03-29 revision 63029)]
+
+```
+$ ruby -e 'def m(*r,**k) p [r,k] end; m("a"=>1,:b=>2)'
+[[{"a"=>1}], {:b=>2}]
+```
+
+#### mruby []
+
+```
+$ ./bin/mruby -e 'def m(*r,**k) p [r,k] end; m("a"=>1,:b=>2)'
+trace (most recent call last):
+	[0] -e:1
+-e:1: keyword argument hash with non symbol keys (ArgumentError)
+```

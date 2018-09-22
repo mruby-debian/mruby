@@ -345,7 +345,7 @@ mrb_file_mtime(mrb_state *mrb, mrb_value self)
   fd = (int)mrb_fixnum(mrb_io_fileno(mrb, self));
   if (fstat(fd, &st) == -1)
     return mrb_false_value();
-  return mrb_funcall(mrb, obj, "at", 1, mrb_float_value(mrb, st.st_mtime));
+  return mrb_funcall(mrb, obj, "at", 1, mrb_fixnum_value(st.st_mtime));
 }
 
 mrb_value
