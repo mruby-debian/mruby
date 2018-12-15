@@ -1,31 +1,6 @@
 class Array
   ##
   # call-seq:
-  #    Array.try_convert(obj) -> array or nil
-  #
-  # Tries to convert +obj+ into an array, using +to_ary+ method.
-  # converted array or +nil+ if +obj+ cannot be converted for any reason.
-  # This method can be used to check if an argument is an array.
-  #
-  #    Array.try_convert([1])   #=> [1]
-  #    Array.try_convert("1")   #=> nil
-  #
-  #    if tmp = Array.try_convert(arg)
-  #      # the argument is an array
-  #    elsif tmp = String.try_convert(arg)
-  #      # the argument is a string
-  #    end
-  #
-  def self.try_convert(obj)
-    if obj.respond_to?(:to_ary)
-      obj.to_ary
-    else
-      nil
-    end
-  end
-
-  ##
-  # call-seq:
   #    ary.uniq!                -> ary or nil
   #    ary.uniq! { |item| ... } -> ary or nil
   #
@@ -41,26 +16,19 @@ class Array
   #    c.uniq! { |s| s.first } # => [["student", "sam"], ["teacher", "matz"]]
   #
   def uniq!(&block)
+    hash = {}
     if block
-      hash = {}
       self.each do |val|
         key = block.call(val)
         hash[key] = val unless hash.key?(key)
       end
       result = hash.values
-    elsif self.size > 20
+    else
       hash = {}
       self.each do |val|
         hash[val] = val
       end
-      result = hash.values
-    else
-      ary = self.dup
-      result = []
-      while ary.size > 0
-        result << ary.shift
-        ary.delete(result.last)
-      end
+      result = hash.keys
     end
     if result.size == self.size
       nil
@@ -149,11 +117,11 @@ class Array
   #
   def union(*args)
     ary = self.dup
-    args.each_with_index do |x,i|
+    args.each do |x|
       ary.concat(x)
-      ary.uniq! if i % 20 == 0
+      ary.uniq!
     end
-    ary.uniq! or ary
+    ary
   end
 
   ##
@@ -323,7 +291,7 @@ class Array
   #                              #=> "100 is out of bounds"
   #
 
-  def fetch(n=nil, ifnone=NONE, &block)
+  def fetch(n, ifnone=NONE, &block)
     warn "block supersedes default value argument" if !n.nil? && ifnone != NONE && block
 
     idx = n
@@ -805,16 +773,6 @@ class Array
   end
 
   ##
-  #  call-seq:
-  #     ary.to_ary -> ary
-  #
-  #  Returns +self+.
-  #
-  def to_ary
-    self
-  end
-
-  ##
   # call-seq:
   #   ary.dig(idx, ...)                 -> object
   #
@@ -933,7 +891,7 @@ class Array
   #
   # Assumes that self is an array of arrays and transposes the rows and columns.
   #
-  # If the length of the subarrays don’t match, an IndexError is raised.
+  # If the length of the subarrays don't match, an IndexError is raised.
   #
   # Examples:
   #
