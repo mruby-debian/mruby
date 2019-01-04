@@ -1,9 +1,9 @@
-From 824156d669df4b8e96c3cd3b7db87293c0e6b879 Mon Sep 17 00:00:00 2001
-From: Nobuhiro Iwamatsu <iwamatsu@nigauri.org>
-Date: Thu, 10 May 2018 08:54:18 +0900
-Subject: [PATCH 2/2] Add set_endian function
+From 277ba02382cbccce6b3586042a1af150421eb64d Mon Sep 17 00:00:00 2001
+From: Nobuhiro Iwamatsu <iwamatsu@debian.org>
+Date: Sat, 5 Jan 2019 06:43:21 +0900
+Subject: [PATCH 3/3] Add set_endian function
 
-Signed-off-by: Nobuhiro Iwamatsu <iwamatsu@nigauri.org>
+Signed-off-by: Nobuhiro Iwamatsu <iwamatsu@debian.org>
 ---
  build_config.rb | 2 ++
  1 file changed, 2 insertions(+)
@@ -29,5 +29,5 @@ index 7f52b5ee..927afd87 100644
    conf.enable_test
  
 -- 
-2.17.1
+2.20.1
 

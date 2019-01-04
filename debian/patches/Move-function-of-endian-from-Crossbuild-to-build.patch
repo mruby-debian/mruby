@@ -1,18 +1,18 @@
-From 2ce496c9ef44e47d057f22407204571cce92bcfb Mon Sep 17 00:00:00 2001
-From: Nobuhiro Iwamatsu <iwamatsu@nigauri.org>
-Date: Thu, 10 May 2018 08:22:56 +0900
-Subject: [PATCH] Move function of endian from Crossbuild to build
+From ec366e9ad70815d96adce0d936bac34c1646e061 Mon Sep 17 00:00:00 2001
+From: Nobuhiro Iwamatsu <iwamatsu@debian.org>
+Date: Sat, 5 Jan 2019 06:40:57 +0900
+Subject: [PATCH 1/3] Move function of endian from Crossbuild to build
 
-Signed-off-by: Nobuhiro Iwamatsu <iwamatsu@nigauri.org>
+Signed-off-by: Nobuhiro Iwamatsu <iwamatsu@debian.org>
 ---
- lib/mruby/build.rb | 43 ++++++++++++++++++++++---------------------
- 1 file changed, 22 insertions(+), 21 deletions(-)
+ lib/mruby/build.rb | 44 ++++++++++++++++++++++----------------------
+ 1 file changed, 22 insertions(+), 22 deletions(-)
 
 diff --git a/lib/mruby/build.rb b/lib/mruby/build.rb
-index f1bc160d..645aad98 100644
+index e2d9fc41..64a9269a 100644
 --- a/lib/mruby/build.rb
 +++ b/lib/mruby/build.rb
-@@ -89,6 +89,7 @@ module MRuby
+@@ -91,6 +91,7 @@ module MRuby
          @enable_bintest = false
          @enable_test = false
          @toolchains = []
@@ -20,8 +20,8 @@ index f1bc160d..645aad98 100644
  
          MRuby.targets[@name] = self
        end
-@@ -110,6 +111,27 @@ module MRuby
-       @mrbc.compile_options += ' -g'
+@@ -118,6 +119,27 @@ module MRuby
+       @enable_debug = true
      end
  
 +    def big_endian
@@ -48,7 +48,7 @@ index f1bc160d..645aad98 100644
      def disable_cxx_exception
        if @cxx_exception_enabled or @cxx_abi_enabled
          raise "cxx_exception already enabled"
-@@ -334,7 +356,6 @@ EOS
+@@ -357,7 +379,6 @@ EOS
      attr_accessor :host_target, :build_target
  
      def initialize(name, build_dir=nil, &block)
@@ -56,10 +56,11 @@ index f1bc160d..645aad98 100644
        @test_runner = Command::CrossTestRunner.new(self)
        super
      end
-@@ -354,25 +375,5 @@ EOS
+@@ -376,26 +397,5 @@ EOS
+         @test_runner.run(mrbtest)
        end
      end
- 
+-
 -    def big_endian
 -      if @endian
 -        puts "Endian has already specified as #{@endian}."
@@ -83,5 +84,5 @@ index f1bc160d..645aad98 100644
    end # CrossBuild
  end # MRuby
 -- 
-2.17.0
+2.20.1
 

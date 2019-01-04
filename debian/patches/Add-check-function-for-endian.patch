@@ -1,19 +1,19 @@
-From cec602de6c80a1a3cfbcab28478569a2c18d6bae Mon Sep 17 00:00:00 2001
-From: Nobuhiro Iwamatsu <iwamatsu@nigauri.org>
-Date: Thu, 10 May 2018 08:28:10 +0900
-Subject: [PATCH] Add check function for endian
+From 06dcd89d66f64cb963d9c811d82555caf9b2da85 Mon Sep 17 00:00:00 2001
+From: Nobuhiro Iwamatsu <iwamatsu@debian.org>
+Date: Sat, 5 Jan 2019 06:42:09 +0900
+Subject: [PATCH 2/3] Add check function for endian
 
-Signed-off-by: Nobuhiro Iwamatsu <iwamatsu@nigauri.org>
+Signed-off-by: Nobuhiro Iwamatsu <iwamatsu@debian.org>
 ---
  lib/mruby/build.rb | 8 ++++++++
  1 file changed, 8 insertions(+)
 
 diff --git a/lib/mruby/build.rb b/lib/mruby/build.rb
-index 645aad98..d0f37237 100644
+index 64a9269a..310127e8 100644
 --- a/lib/mruby/build.rb
 +++ b/lib/mruby/build.rb
-@@ -111,6 +111,14 @@ module MRuby
-       @mrbc.compile_options += ' -g'
+@@ -119,6 +119,14 @@ module MRuby
+       @enable_debug = true
      end
  
 +    def set_endian
@@ -28,5 +28,5 @@ index 645aad98..d0f37237 100644
        if @endian
          puts "Endian has already specified as #{@endian}."
 -- 
-2.17.1
+2.20.1
 

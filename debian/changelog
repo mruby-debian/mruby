@@ -1,6 +1,10 @@
 mruby (2.0.0-1) unstable; urgency=medium
 
+  [ Akira Mitsui ]
   * New upstream release (2.0.0).
+
+  [ Nobuhiro Iwamatsu ]
+  * Update patches.
 
  -- Akira Mitsui <murase.syuka@gmail.com>  Sat, 15 Dec 2018 11:55:05 +0900
 
