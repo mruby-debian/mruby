@@ -5,6 +5,7 @@ mruby (2.0.0-1) unstable; urgency=medium
 
   [ Nobuhiro Iwamatsu ]
   * Update patches.
+  * Bump Standards-Version to 4.3.0.
 
  -- Akira Mitsui <murase.syuka@gmail.com>  Sat, 15 Dec 2018 11:55:05 +0900
 
