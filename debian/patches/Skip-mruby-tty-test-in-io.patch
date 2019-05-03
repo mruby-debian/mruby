@@ -1,25 +1,25 @@
-From 8eac91a47b7abdedbb416712c2313b11862dd7a4 Mon Sep 17 00:00:00 2001
-From: Nobuhiro Iwamatsu <iwamatsu@nigauri.org>
-Date: Sun, 22 Apr 2018 10:38:30 +0900
+From c3f0b088f36b76ab31337890f47bffcdfa54f47c Mon Sep 17 00:00:00 2001
+From: Nobuhiro Iwamatsu <iwamatsu@debian.org>
+Date: Sat, 4 May 2019 06:46:13 +0900
 Subject: [PATCH] Skip mruby tty test in io
 
-Signed-off-by: Nobuhiro Iwamatsu <iwamatsu@nigauri.org>
+Signed-off-by: Nobuhiro Iwamatsu <iwamatsu@debian.org>
 ---
  mrbgems/mruby-io/test/io.rb | 1 +
  1 file changed, 1 insertion(+)
 
 diff --git a/mrbgems/mruby-io/test/io.rb b/mrbgems/mruby-io/test/io.rb
-index e06b1499..15f13490 100644
+index 85852c17..2aea935e 100644
 --- a/mrbgems/mruby-io/test/io.rb
 +++ b/mrbgems/mruby-io/test/io.rb
-@@ -344,6 +344,7 @@ end
+@@ -308,6 +308,7 @@ end
  
  assert('IO#isatty') do
    skip "isatty is not supported on this platform" if MRubyIOTestUtil.win?
 +  skip "Ignore this test in Debian"
-   f1 = File.open("/dev/tty")
-   f2 = File.open($mrbtest_io_rfname)
- 
+   begin
+     f = File.open("/dev/tty")
+   rescue RuntimeError => e
 -- 
-2.17.0
+2.20.1
 
