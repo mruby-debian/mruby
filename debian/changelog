@@ -6,7 +6,7 @@ mruby (2.1.2-1) unstable; urgency=medium
     - Use debhelper-compat instead of debhelper and compat.
   * Remove some debian specific patches.
 
- -- Nobuhiro Iwamatsu <iwamatsu@debian.org>  Wed, 11 Dec 2019 13:41:28 +0900
+ -- Nobuhiro Iwamatsu <iwamatsu@debian.org>  Wed, 09 Dec 2020 13:24:45 +0900
 
 mruby (2.0.1-1) experimental; urgency=medium
 
