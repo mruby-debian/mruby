@@ -1,4 +1,10 @@
 #!/usr/bin/make -f
 
+RAKE="rake --verbose"
+
 %:
 	dh $@
+
+override_dh_auto_build:
+	dh_auto_build -- RAKE=$(RAKE)
+
