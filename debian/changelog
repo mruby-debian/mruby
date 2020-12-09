@@ -4,6 +4,7 @@ mruby (2.1.2-1) unstable; urgency=medium
   * Update d/control.
     - Bump Standards-Version to 4.5.0.
     - Use debhelper-compat instead of debhelper and compat.
+  * Remove some debian specific patches.
 
  -- Nobuhiro Iwamatsu <iwamatsu@debian.org>  Wed, 11 Dec 2019 13:41:28 +0900
 
