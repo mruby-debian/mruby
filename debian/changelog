@@ -1,3 +1,11 @@
+mruby (2.1.2-3) unstable; urgency=medium
+
+  * Fix CVE-2020-36401.
+    Fixed the use-after-free problem. Add d/patches/Fix-CVE-2020-36401.patch.
+    This patch is included 9cdf439db5 and 97319697c8 from upstream.
+
+ -- Nobuhiro Iwamatsu <iwamatsu@debian.org>  Mon, 12 Jul 2021 16:23:01 +0900
+
 mruby (2.1.2-2) unstable; urgency=medium
 
   * Add d/upstream/metadata.
