@@ -5,6 +5,8 @@ mruby (3.0.0-1) experimental; urgency=medium
   * Update d/control.
     - Add Rules-Requires-Root: no.
     - Add Homepage.
+  * Update d/upstream/metadata.
+    - Fix typo
 
  -- Nobuhiro Iwamatsu <iwamatsu@debian.org>  Tue, 13 Jul 2021 16:55:37 +0900
 
