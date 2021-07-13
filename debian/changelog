@@ -1,6 +1,7 @@
 mruby (3.0.0-1) experimental; urgency=medium
 
   * New upstream release (3.0.0).
+  * Drop d/patches/Fix-CVE-2020-36401.patch.
 
  -- Nobuhiro Iwamatsu <iwamatsu@debian.org>  Tue, 13 Jul 2021 16:55:37 +0900
 
