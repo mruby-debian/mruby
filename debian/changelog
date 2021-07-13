@@ -4,6 +4,7 @@ mruby (3.0.0-1) experimental; urgency=medium
   * Drop d/patches/Fix-CVE-2020-36401.patch.
   * Update d/control.
     - Add Rules-Requires-Root: no.
+    - Add Homepage.
 
  -- Nobuhiro Iwamatsu <iwamatsu@debian.org>  Tue, 13 Jul 2021 16:55:37 +0900
 
