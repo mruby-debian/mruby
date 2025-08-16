@@ -1,3 +1,11 @@
+mruby (3.3.0-1+deb13u1) trixie; urgency=medium
+
+  * Fix CVE-2025-7207 (Closes: #1109338)
+    Add d/patches/CVE-2025-7207.patch. Fix A heap-buffer-overflow in
+    stack_clear at src/vm.c.
+
+ -- Nobuhiro Iwamatsu <iwamatsu@debian.org>  Sat, 16 Aug 2025 09:25:56 +0900
+
 mruby (3.3.0-1) unstable; urgency=medium
 
   * New upstream release.
