@@ -1,3 +1,9 @@
+mruby (3.4.0-3) unstable; urgency=medium
+
+  * d/clean: Add rbgems/mruby-compiler/core/y.tab.c (Closes: #1046416)
+
+ -- Nobuhiro Iwamatsu <iwamatsu@debian.org>  Fri, 19 Jun 2026 17:27:25 +0900
+
 mruby (3.4.0-2) unstable; urgency=medium
 
   * Fix CVE-2025-7207 (Closes: #1109338)
