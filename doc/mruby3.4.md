@@ -4,7 +4,7 @@
 
 # The language
 
-- mruby now supports `private` and `protected` visibitily ([b0db0bd](https://github.com/mruby/mruby/commit/b0db0bd))
+- mruby now supports `private` and `protected` visibility ([b0db0bd](https://github.com/mruby/mruby/commit/b0db0bd))
 - Maximum length of inlined symbols reduced from 5 to 4 characters to provide space for visibility flags ([6442a01](https://github.com/mruby/mruby/commit/6442a01))
 - Many methods are made private according to CRuby visibility ([4a0e806](https://github.com/mruby/mruby/commit/4a0e806))
 - Generate OP_SSEND for `self.method` type calls ([111fe4b](https://github.com/mruby/mruby/commit/111fe4b))
@@ -32,7 +32,7 @@
 # Build & Configuration
 
 - New Build Target: `test:run:serial`, `test:run:serial:lib`, `test:run:serial:bin` ([#6423](https://github.com/mruby/mruby/pull/6423))
-- New Platform: Playstation Portable ([#6022](https://github.com/mruby/mruby/pull/6465))
+- New Platform: PlayStation Portable ([#6022](https://github.com/mruby/mruby/pull/6465))
 - New Platform: emscripten ([#6487](https://github.com/mruby/mruby/pull/6487))
 - New Config: no-float (with MRB_NO_FLOAT) ([32200f1](https://github.com/mruby/mruby/commit/32200f1))
 
@@ -131,7 +131,7 @@
 - [#6243](https://github.com/mruby/mruby/pull/6243) Fixed base64 decoding in `mruby-pack`
 - [#6244](https://github.com/mruby/mruby/pull/6244) Revise scope of role of `mrb_vm_run()`
 - [#6246](https://github.com/mruby/mruby/pull/6246) Fix typo in `test/t/hash.rb`
-- [#6249](https://github.com/mruby/mruby/pull/6249) Fix grammar in `src/vm.c`; `catched` -> `caught`
+- [#6249](https://github.com/mruby/mruby/pull/6249) Fix spelling in `src/vm.c`
 - [#6250](https://github.com/mruby/mruby/pull/6250) Fix spelling
 - [#6251](https://github.com/mruby/mruby/pull/6251) Clean up root move `CODEOWNERS` to `.github` directory
 - [#6253](https://github.com/mruby/mruby/pull/6253) Allow recycling fibers by GC if not referenced directly
@@ -237,7 +237,7 @@
 - [#6461](https://github.com/mruby/mruby/pull/6461) To create a release package file in draft
 - [#6462](https://github.com/mruby/mruby/pull/6462) Properly cast the return value of `memchr()`
 - [#6463](https://github.com/mruby/mruby/pull/6463) Add `level` argument to `File.dirname`
-- [#6465](https://github.com/mruby/mruby/pull/6465) Add initial playstation portable crossbuild support
+- [#6465](https://github.com/mruby/mruby/pull/6465) Add initial PlayStation portable crossbuild support
 - [#6468](https://github.com/mruby/mruby/pull/6468) Fixed missing changes to `IB_FIND_BY_KEY()` parameter names
 - [#6469](https://github.com/mruby/mruby/pull/6469) Add more `const` qualifier for `RProc`
 - [#6472](https://github.com/mruby/mruby/pull/6472) Moved tests for `Integer#quo`

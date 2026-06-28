@@ -65,7 +65,7 @@ mkdtemp(char *temp)
 #include <mruby/error.h>
 #include <mruby/string.h>
 #include <mruby/variable.h>
-#include <mruby/ext/io.h>
+#include <mruby/io.h>
 
 static mrb_value
 mrb_io_test_io_setup(mrb_state *mrb, mrb_value self)
@@ -276,7 +276,7 @@ mrb_mruby_io_gem_test(mrb_state* mrb)
   }
 #endif
   if (env_home) {
-    char *utf8 = mrb_utf8_from_locale(env_home, strlen(env_home));
+    char *utf8 = mrb_utf8_from_locale(env_home, -1);
     mrb_value path = mrb_str_new_cstr(mrb, utf8);
 #ifdef _WIN32
     char *pathp = RSTRING_PTR(path);
