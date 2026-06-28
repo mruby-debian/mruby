@@ -1,3 +1,9 @@
+mruby (4.0.0-1) UNRELEASED; urgency=medium
+
+  * New upstream release.
+
+ -- Nobuhiro Iwamatsu <iwamatsu@debian.org>  Sun, 28 Jun 2026 17:52:40 +0900
+
 mruby (3.4.0-3) unstable; urgency=medium
 
   * d/clean: Add rbgems/mruby-compiler/core/y.tab.c (Closes: #1046416)
