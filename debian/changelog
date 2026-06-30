@@ -1,8 +1,15 @@
-mruby (4.0.0-1) UNRELEASED; urgency=medium
+mruby (4.0.0-1) unstable; urgency=medium
 
   * New upstream release.
+  * Update d/patches:
+    - Drop fix-bigint-on-raspberry-pi.patch
+    - Drop CVE-2025-7207.patch
+  * Update d/control:
+    - Bumped Standards-Version to 4.7.4.1
+    - Remove redundant 'Rules-Requires-Root: no' field
+    - Remove redundant 'Priority: optional' field
 
- -- Nobuhiro Iwamatsu <iwamatsu@debian.org>  Sun, 28 Jun 2026 17:52:40 +0900
+ -- Nobuhiro Iwamatsu <iwamatsu@debian.org>  Tue, 30 Jun 2026 16:07:15 +0900
 
 mruby (3.4.0-3) unstable; urgency=medium
 
