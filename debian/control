@@ -8,7 +8,6 @@ Standards-Version: 4.7.4.1
 Homepage: https://mruby.org/
 Vcs-Git: https://github.com/mruby-debian/mruby.git
 Vcs-Browser: https://github.com/mruby-debian/mruby
-Rules-Requires-Root: no
 
 Package: mruby
 Architecture: any
