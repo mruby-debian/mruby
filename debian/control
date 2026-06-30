@@ -1,6 +1,5 @@
 Source: mruby
 Section: ruby
-Priority: optional
 Maintainer: Nobuhiro Iwamatsu <iwamatsu@debian.org>
 Uploaders: Akira Mitsui <murase.syuka@gmail.com>
 Build-Depends: debhelper-compat (= 13), ruby, bison
